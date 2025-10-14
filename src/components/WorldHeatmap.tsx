@@ -10,7 +10,7 @@ type Position = { x: number; y: number };
 type Feature = {
   type: "Feature";
   id?: string | number;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   geometry: {
     type: "Polygon" | "MultiPolygon";
     coordinates: number[][][] | number[][][][];
@@ -61,9 +61,9 @@ function projectEquirectangular(lon: number, lat: number, width: number, height:
 
 function featureToPath(feature: Feature, width: number, height: number) {
   const type = feature.geometry.type;
-  const coords: any = feature.geometry.coordinates;
+  const coords: number[][][] | number[][][][] = feature.geometry.coordinates;
   const pathParts: string[] = [];
-  const drawPolygon = (poly: number[][]) => {
+  const drawPolygon = (poly: number[][][]) => {
     for (let r = 0; r < poly.length; r++) {
       const ring = poly[r];
       for (let i = 0; i < ring.length; i++) {
@@ -75,24 +75,43 @@ function featureToPath(feature: Feature, width: number, height: number) {
     }
   };
   if (type === "Polygon") {
-    drawPolygon(coords as number[][]);
+    drawPolygon(coords as number[][][]);
   } else if (type === "MultiPolygon") {
-    const multipoly = coords as number[][][];
+    const multipoly = coords as number[][][][];
     for (let p = 0; p < multipoly.length; p++) drawPolygon(multipoly[p]);
   }
   return pathParts.join(" ");
 }
 
+function getStringProp(obj: Record<string, unknown> | undefined, key: string): string | undefined {
+  const v = obj?.[key];
+  return typeof v === "string" ? v : undefined;
+}
+
 function pickIso3(f: Feature): string | undefined {
-  const p = f.properties || {};
+  const p = f.properties;
   return (
-    p.ISO_A3 || p.ADM0_A3 || p.ISO3 || p.iso3 || p.iso_a3 || p.id || (typeof f.id === "string" ? f.id : undefined)
+    getStringProp(p, "ISO_A3") ||
+    getStringProp(p, "ADM0_A3") ||
+    getStringProp(p, "ISO3") ||
+    getStringProp(p, "iso3") ||
+    getStringProp(p, "iso_a3") ||
+    getStringProp(p, "id") ||
+    (typeof f.id === "string" ? f.id : undefined)
   );
 }
 
 function pickName(f: Feature): string {
-  const p = f.properties || {};
-  return p.ADMIN || p.ADMIN_NAME || p.name || p.NAME || p.COUNTRY || p.SOVEREIGNT || "Bilinmeyen";
+  const p = f.properties;
+  return (
+    getStringProp(p, "ADMIN") ||
+    getStringProp(p, "ADMIN_NAME") ||
+    getStringProp(p, "name") ||
+    getStringProp(p, "NAME") ||
+    getStringProp(p, "COUNTRY") ||
+    getStringProp(p, "SOVEREIGNT") ||
+    "Bilinmeyen"
+  );
 }
 
 const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
