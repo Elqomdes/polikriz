@@ -1,8 +1,8 @@
 import Link from "next/link";
-type Props = { params: { iso: string } };
+type Props = { params: Promise<{ iso: string }> };
 
-export default function CountryDetailPage({ params }: Props) {
-  const { iso } = params;
+export default async function CountryDetailPage({ params }: Props) {
+  const { iso } = await params;
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-baseline justify-between">

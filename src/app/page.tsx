@@ -13,7 +13,7 @@ export default function Home() {
             IND: 0.4, BRA: 0.3, JPN: 0.2, CAN: 0.25, AUS: 0.3, ITA: 0.45, ESP: 0.4,
             MEX: 0.5, ARG: 0.6, ZAF: 0.4, EGY: 0.7, NGA: 0.6, KEN: 0.5, MAR: 0.4,
             SAU: 0.3, IRN: 0.8, IRQ: 0.9, SYR: 0.95, LBY: 0.85, UKR: 0.9, POL: 0.4,
-            CZE: 0.3, HUN: 0.5, ROU: 0.4, BGR: 0.4, GRC: 0.5, TUR: 0.6, ISR: 0.7,
+            CZE: 0.3, HUN: 0.5, ROU: 0.4, BGR: 0.4, GRC: 0.5, ISR: 0.7,
             PSE: 0.9, JOR: 0.6, LBN: 0.8, KWT: 0.3, ARE: 0.2, QAT: 0.25, BHR: 0.3,
             OMN: 0.3, YEM: 0.9, AFG: 0.95, PAK: 0.7, BGD: 0.5, LKA: 0.6, MMR: 0.8,
             THA: 0.4, VNM: 0.3, IDN: 0.4, MYS: 0.3, SGP: 0.2, PHL: 0.5, KOR: 0.3,

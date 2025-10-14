@@ -1,10 +1,10 @@
 import Link from "next/link";
 import FigureFrame from "@/components/FigureFrame";
 
-type Props = { params: { id: string } };
+type Props = { params: Promise<{ id: string }> };
 
 export default async function ScenarioDetailPage({ params }: Props) {
-  const { id } = params;
+  const { id } = await params;
   // Server component: fetch scenario
   const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/scenarios/${id}`, { cache: "no-store" });
   const scenario: { status?: string } = res.ok ? await res.json() : { status: "error" };

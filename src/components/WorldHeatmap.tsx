@@ -8,20 +8,9 @@ type Props = {
 
 type Position = { x: number; y: number };
 
-type Feature = {
-  type: "Feature";
-  id?: string | number;
-  properties?: Record<string, unknown>;
-  geometry: {
-    type: "Polygon" | "MultiPolygon";
-    coordinates: number[][][] | number[][][][];
-  };
-};
+type Feature = GeoJSON.Feature<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>;
 
-type FeatureCollection = {
-  type: "FeatureCollection";
-  features: Feature[];
-};
+type FeatureCollection = GeoJSON.FeatureCollection<GeoJSON.Geometry, GeoJSON.GeoJsonProperties>;
 
 function clamp(v: number, lo = 0, hi = 1) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -58,7 +47,7 @@ function createProjection(width: number, height: number): GeoProjection {
   return geoNaturalEarth1().fitSize([width, height], { type: "Sphere" } as { type: "Sphere" });
 }
 
-function getStringProp(obj: Record<string, unknown> | undefined, key: string): string | undefined {
+function getStringProp(obj: GeoJSON.GeoJsonProperties | undefined, key: string): string | undefined {
   const v = obj?.[key];
   return typeof v === "string" ? v : undefined;
 }
@@ -151,6 +140,11 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
     }
   }, []);
 
+  const width = size.w;
+  const height = size.h;
+  const projection = useMemo(() => createProjection(width, height), [width, height]);
+  const pathGen = useMemo(() => geoPath(projection), [projection]);
+
   // Pre-compute feature data for better performance
   const featuresData = useMemo(() => {
     if (!fc) return [];
@@ -161,15 +155,10 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
       const score = iso3 ? scores[iso3] : undefined;
       const val = typeof score === "number" ? clamp(score) : 0;
       const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1";
-      const d = pathGen(f as Feature) || undefined;
+      const d = pathGen(f) || undefined;
       return { idx, iso3, name, score, fill, d };
     });
   }, [fc, scores, colorStops, pathGen]);
-
-  const width = size.w;
-  const height = size.h;
-  const projection = useMemo(() => createProjection(width, height), [width, height]);
-  const pathGen = useMemo(() => geoPath(projection), [projection]);
 
   useEffect(() => {
     handleResize();
