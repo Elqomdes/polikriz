@@ -11,7 +11,7 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
   const colorStops = useMemo(() => ["#ffffcc", "#fd8d3c", "#800026"], []);
   return (
     <div className="w-full h-full">
-      <div className="aspect-[16/9] w-full rounded-lg border border-black/10 dark:border-white/10 bg-black/[.03] dark:bg-white/[.03] flex items-center justify-center text-xs text-black/60 dark:text-white/60" aria-label="Dünya polikriz ısısı haritası">
+      <div className="w-full h-full flex items-center justify-center text-xs text-black/60 dark:text-white/60" aria-label="Dünya polikriz ısısı haritası">
         Harita modülü devre dışı (bağımlılık uyumsuzluğu). Özet gösterim aşağıda.
       </div>
       <div className="mt-2 flex items-center gap-2 text-xs" aria-label="Lejant">
