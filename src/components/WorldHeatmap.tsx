@@ -151,7 +151,13 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
         return r.json();
       })
       .then((data: FeatureCollection) => {
-        if (!cancelled) setFc(data);
+        if (cancelled) return;
+        const isValid = data && Array.isArray(data.features) && data.features.length > 0;
+        if (!isValid) {
+          setError("Coğrafya verisi boş veya geçersiz");
+          return;
+        }
+        setFc(data);
       })
       .catch(e => {
         if (!cancelled) setError(e.message || String(e));
@@ -195,22 +201,23 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
   return (
     <div className="w-full" ref={containerRef}>
       <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="auto" role="img" aria-label="Dünya polikriz ısısı haritası">
-        <rect x={0} y={0} width={width} height={height} fill="#f8fafc" className="dark:fill-[#0b1220]" />
+        <rect x={0} y={0} width={width} height={height} fill="#eef2f7" className="dark:fill-[#0b1220]" />
         {fc.features.map((f, idx) => {
           const iso3Raw = pickIso3(f);
           const iso3 = typeof iso3Raw === "string" ? iso3Raw.toUpperCase() : undefined;
           const name = pickName(f);
           const score = iso3 ? scores[iso3] : undefined;
           const val = typeof score === "number" ? clamp(score) : 0;
-          const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#e5e7eb"; // gray for missing
+          const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1"; // higher-contrast default fill
           const d = featureToPath(f, width, height);
           return (
             <path
               key={idx}
               d={d}
               fill={fill}
-              stroke={hover?.name === name ? "#111827" : "#ffffff"}
-              strokeWidth={hover?.name === name ? 1.5 : 0.5}
+              stroke={hover?.name === name ? "#111827" : "#9ca3af"}
+              strokeOpacity={hover?.name === name ? 0.9 : 0.7}
+              strokeWidth={hover?.name === name ? 1.5 : 0.6}
               className="cursor-pointer"
               onMouseMove={(e) => {
                 const bounds = (e.currentTarget.ownerSVGElement)?.getBoundingClientRect();
