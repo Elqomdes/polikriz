@@ -141,7 +141,7 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
     let cancelled = false;
     // Use a lightweight GeoJSON source (no extra deps)
     // Countries maritime 10m keeps ISO_A3 and ADMIN names
-    const url = "https://unpkg.com/@geo-maps/countries-maritime-10m@1.7.1/countries-maritime-10m.geo.json";
+    const url = "/api/world";
     fetch(url)
       .then(r => {
         if (!r.ok) throw new Error(`GeoJSON yüklenemedi: ${r.status}`);
