@@ -1,5 +1,5 @@
 "use client";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { geoPath, geoNaturalEarth1, GeoProjection } from "d3-geo";
 
 type Props = {
@@ -53,7 +53,6 @@ function interpolateColors(stops: string[], t: number) {
   return rgbToHex(r, g, b);
 }
 
-// Simple equirectangular projection (lon,lat in degrees) -> (x,y) in [0, width]x[0,height]
 // d3 projection and path builder for accurate world shapes
 function createProjection(width: number, height: number): GeoProjection {
   return geoNaturalEarth1().fitSize([width, height], { type: "Sphere" } as any);
@@ -93,28 +92,31 @@ function pickName(f: Feature): string {
 }
 
 const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
-  const colorStops = useMemo(() => ["#ffffcc", "#fd8d3c", "#800026"], []);
+  const colorStops = useMemo(() => ["#f7fbff", "#deebf7", "#c6dbef", "#9ecae1", "#6baed6", "#4292c6", "#2171b5", "#08519c", "#08306b"], []);
   const [fc, setFc] = useState<FeatureCollection | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hover, setHover] = useState<{ name: string; score: number | null; pos: Position } | null>(null);
   const [selected, setSelected] = useState<{ name: string; iso3?: string; time?: string; timezone?: string; loading: boolean; error?: string } | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [size, setSize] = useState<{ w: number; h: number }>({ w: 800, h: 420 });
+  const [size, setSize] = useState<{ w: number; h: number }>({ w: 800, h: 450 });
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced resize handler for better performance
+  const handleResize = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const width = Math.max(400, rect.width);
+    // Better aspect ratio for world map
+    const height = Math.max(250, Math.round(width * 0.6));
+    setSize({ w: Math.round(width), h: height });
+  }, []);
 
   useEffect(() => {
-    const handler = () => {
-      const el = containerRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const width = Math.max(300, rect.width);
-      // 800x420 ~ 1.9 aspect ratio (world map)
-      const height = Math.max(200, Math.round(width / 1.9));
-      setSize({ w: Math.round(width), h: height });
-    };
-    handler();
-    window.addEventListener("resize", handler);
-    return () => window.removeEventListener("resize", handler);
-  }, []);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [handleResize]);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,10 +151,10 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
   }, []);
 
   const legend = (
-    <div className="mt-2 flex items-center gap-2 text-xs" aria-label="Lejant">
-      <span> düşük</span>
-      <div className="h-2 flex-1 min-w-[120px] rounded" style={{ background: `linear-gradient(to right, ${colorStops.join(", ")})` }} />
-      <span> yüksek</span>
+    <div className="mt-3 flex items-center gap-3 text-xs" aria-label="Lejant">
+      <span className="text-gray-600 dark:text-gray-400">Düşük Risk</span>
+      <div className="h-3 flex-1 min-w-[200px] rounded shadow-sm" style={{ background: `linear-gradient(to right, ${colorStops.join(", ")})` }} />
+      <span className="text-gray-600 dark:text-gray-400">Yüksek Risk</span>
     </div>
   );
 
@@ -183,61 +185,95 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
   const projection = useMemo(() => createProjection(width, height), [width, height]);
   const pathGen = useMemo(() => geoPath(projection), [projection]);
 
+  // Optimized mouse handlers with debouncing
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGPathElement>, name: string, score: number | null) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    hoverTimeoutRef.current = setTimeout(() => {
+      const bounds = (e.currentTarget.ownerSVGElement)?.getBoundingClientRect();
+      const px = e.clientX - (bounds?.left || 0);
+      const py = e.clientY - (bounds?.top || 0);
+      setHover({ name, score, pos: { x: px, y: py } });
+    }, 16); // ~60fps throttling
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setHover(null);
+  }, []);
+
+  const handleClick = useCallback(async (name: string, iso3?: string) => {
+    setSelected({ name, iso3, loading: true });
+    try {
+      const qName = encodeURIComponent(name);
+      const qIso = iso3 ? `&iso3=${encodeURIComponent(iso3)}` : "";
+      const res = await fetch(`/api/time?country=${qName}${qIso}`);
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || `Zaman bilgisi alınamadı (${res.status})`);
+      }
+      const data = await res.json();
+      setSelected({ name, iso3, loading: false, time: data.datetime, timezone: data.timezone });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setSelected({ name, iso3, loading: false, error: msg });
+    }
+  }, []);
+
+  // Pre-compute feature data for better performance
+  const featuresData = useMemo(() => {
+    if (!fc) return [];
+    return fc.features.map((f, idx) => {
+      const iso3Raw = pickIso3(f);
+      const iso3 = typeof iso3Raw === "string" ? iso3Raw.toUpperCase() : undefined;
+      const name = pickName(f);
+      const score = iso3 ? scores[iso3] : undefined;
+      const val = typeof score === "number" ? clamp(score) : 0;
+      const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1";
+      const d = pathGen(f as any) || undefined;
+      return { idx, iso3, name, score, fill, d };
+    });
+  }, [fc, scores, colorStops, pathGen]);
+
   return (
     <div className="w-full" ref={containerRef}>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="Dünya polikriz ısısı haritası" preserveAspectRatio="xMidYMid meet">
+      <svg 
+        viewBox={`0 0 ${width} ${height}`} 
+        width="100%" 
+        height={height} 
+        role="img" 
+        aria-label="Dünya polikriz ısısı haritası" 
+        preserveAspectRatio="xMidYMid meet"
+        className="overflow-hidden"
+      >
         <rect x={0} y={0} width={width} height={height} fill="#eef2f7" className="dark:fill-[#0b1220]" />
-        {fc.features.map((f, idx) => {
-          const iso3Raw = pickIso3(f);
-          const iso3 = typeof iso3Raw === "string" ? iso3Raw.toUpperCase() : undefined;
-          const name = pickName(f);
-          const score = iso3 ? scores[iso3] : undefined;
-          const val = typeof score === "number" ? clamp(score) : 0;
-          const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1"; // higher-contrast default fill
-          const d = pathGen(f as any) || undefined;
-          return (
-            <path
-              key={idx}
-              d={d}
-              fill={fill}
-              stroke={hover?.name === name ? "#111827" : "#9ca3af"}
-              strokeOpacity={hover?.name === name ? 0.9 : 0.7}
-              strokeWidth={hover?.name === name ? 1.5 : 0.6}
-              className="cursor-pointer"
-              onMouseMove={(e) => {
-                const bounds = (e.currentTarget.ownerSVGElement)?.getBoundingClientRect();
-                const px = e.clientX - (bounds?.left || 0);
-                const py = e.clientY - (bounds?.top || 0);
-                setHover({ name, score: typeof score === "number" ? score : null, pos: { x: px, y: py } });
-              }}
-              onMouseLeave={() => setHover(null)}
-              onClick={async () => {
-                setSelected({ name, iso3, loading: true });
-                try {
-                  const qName = encodeURIComponent(name);
-                  const qIso = iso3 ? `&iso3=${encodeURIComponent(iso3)}` : "";
-                  const res = await fetch(`/api/time?country=${qName}${qIso}`);
-                  if (!res.ok) {
-                    const msg = await res.text();
-                    throw new Error(msg || `Zaman bilgisi alınamadı (${res.status})`);
-                  }
-                  const data = await res.json();
-                  setSelected({ name, iso3, loading: false, time: data.datetime, timezone: data.timezone });
-                } catch (e: unknown) {
-                  const msg = e instanceof Error ? e.message : String(e);
-                  setSelected({ name, iso3, loading: false, error: msg });
-                }
-              }}
-            />
-          );
-        })}
+        {featuresData.map(({ idx, iso3, name, score, fill, d }) => (
+          <path
+            key={idx}
+            d={d}
+            fill={fill}
+            stroke={hover?.name === name ? "#111827" : "#9ca3af"}
+            strokeOpacity={hover?.name === name ? 0.9 : 0.7}
+            strokeWidth={hover?.name === name ? 1.5 : 0.6}
+            className="cursor-pointer transition-all duration-150"
+            onMouseMove={(e) => handleMouseMove(e, name, typeof score === "number" ? score : null)}
+            onMouseLeave={handleMouseLeave}
+            onClick={() => handleClick(name, iso3)}
+          />
+        ))}
         {hover && (
           <g pointerEvents="none" transform={`translate(${hover.pos.x}, ${hover.pos.y})`}>
-            <foreignObject x={8} y={-8 - 28} width={220} height={40}>
-              <div className="px-2 py-1 rounded bg-white/90 dark:bg-black/80 text-xs shadow border border-black/10 dark:border-white/10" style={{ maxWidth: 220 }}>
-                <div className="font-medium truncate">{hover.name}</div>
+            <foreignObject x={12} y={-12 - 40} width={240} height={50}>
+              <div className="px-3 py-2 rounded-lg bg-white/95 dark:bg-gray-900/95 text-xs shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm" style={{ maxWidth: 240 }}>
+                <div className="font-semibold text-gray-900 dark:text-white truncate">{hover.name}</div>
                 {hover.score != null && (
-                  <div className="opacity-70">Skor: {clamp(hover.score).toFixed(2)}</div>
+                  <div className="text-gray-600 dark:text-gray-300 mt-1">
+                    Polikriz Skoru: <span className="font-medium">{clamp(hover.score).toFixed(2)}</span>
+                  </div>
                 )}
               </div>
             </foreignObject>
@@ -246,13 +282,15 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
       </svg>
       {legend}
       {selected && (
-        <div className="mt-2 text-xs">
-          <div className="inline-flex items-center gap-2 px-2 py-1 rounded border border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/60 backdrop-blur">
-            <span className="font-medium">{selected.name}</span>
-            {selected.loading && <span className="opacity-70">yükleniyor…</span>}
+        <div className="mt-3 text-sm">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm">
+            <span className="font-semibold text-gray-900 dark:text-white">{selected.name}</span>
+            {selected.loading && <span className="text-gray-500 dark:text-gray-400">Yükleniyor…</span>}
             {selected.error && <span className="text-red-600 dark:text-red-400">{selected.error}</span>}
             {!selected.loading && !selected.error && selected.time && (
-              <span className="opacity-80">{selected.time} ({selected.timezone})</span>
+              <span className="text-gray-600 dark:text-gray-300">
+                {selected.time} ({selected.timezone})
+              </span>
             )}
           </div>
         </div>
