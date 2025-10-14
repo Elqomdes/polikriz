@@ -1,4 +1,6 @@
 import Link from "next/link";
+import WorldHeatmap from "@/components/WorldHeatmap";
+
 export default function Home() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -6,13 +8,7 @@ export default function Home() {
         <h1 className="text-2xl font-semibold tracking-tight mb-1">Bugünün Polikriz Isısı</h1>
         <p className="text-sm text-black/60 dark:text-white/60">Veri aralığı: Son 12 ay.</p>
         <div className="mt-4 aspect-[16/9] w-full rounded-lg border border-black/10 dark:border-white/10 bg-white dark:bg-black p-2">
-          {/* simple mock scores until live data is wired */}
-          {/* TUR, USA, DEU, FRA, CHN example iso3 codes */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <div className="w-full h-full">
-            {/* dynamic import not necessary for react-simple-maps */}
-            {require("react").createElement(require("@/components/WorldHeatmap").default, { scores: { TUR: 0.6, USA: 0.3, DEU: 0.4, FRA: 0.35, CHN: 0.7 } })}
-          </div>
+          <WorldHeatmap scores={{ TUR: 0.6, USA: 0.3, DEU: 0.4, FRA: 0.35, CHN: 0.7 }} />
         </div>
       </section>
 
