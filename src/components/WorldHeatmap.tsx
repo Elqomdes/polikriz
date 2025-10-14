@@ -55,7 +55,7 @@ function interpolateColors(stops: string[], t: number) {
 
 // d3 projection and path builder for accurate world shapes
 function createProjection(width: number, height: number): GeoProjection {
-  return geoNaturalEarth1().fitSize([width, height], { type: "Sphere" } as any);
+  return geoNaturalEarth1().fitSize([width, height], { type: "Sphere" } as { type: "Sphere" });
 }
 
 function getStringProp(obj: Record<string, unknown> | undefined, key: string): string | undefined {
@@ -111,6 +111,65 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
     const height = Math.max(250, Math.round(width * 0.6));
     setSize({ w: Math.round(width), h: height });
   }, []);
+
+  // Optimized mouse handlers with debouncing
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGPathElement>, name: string, score: number | null) => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    
+    hoverTimeoutRef.current = setTimeout(() => {
+      const bounds = (e.currentTarget.ownerSVGElement)?.getBoundingClientRect();
+      const px = e.clientX - (bounds?.left || 0);
+      const py = e.clientY - (bounds?.top || 0);
+      setHover({ name, score, pos: { x: px, y: py } });
+    }, 16); // ~60fps throttling
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setHover(null);
+  }, []);
+
+  const handleClick = useCallback(async (name: string, iso3?: string) => {
+    setSelected({ name, iso3, loading: true });
+    try {
+      const qName = encodeURIComponent(name);
+      const qIso = iso3 ? `&iso3=${encodeURIComponent(iso3)}` : "";
+      const res = await fetch(`/api/time?country=${qName}${qIso}`);
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || `Zaman bilgisi alınamadı (${res.status})`);
+      }
+      const data = await res.json();
+      setSelected({ name, iso3, loading: false, time: data.datetime, timezone: data.timezone });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setSelected({ name, iso3, loading: false, error: msg });
+    }
+  }, []);
+
+  // Pre-compute feature data for better performance
+  const featuresData = useMemo(() => {
+    if (!fc) return [];
+    return fc.features.map((f, idx) => {
+      const iso3Raw = pickIso3(f);
+      const iso3 = typeof iso3Raw === "string" ? iso3Raw.toUpperCase() : undefined;
+      const name = pickName(f);
+      const score = iso3 ? scores[iso3] : undefined;
+      const val = typeof score === "number" ? clamp(score) : 0;
+      const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1";
+      const d = pathGen(f as Feature) || undefined;
+      return { idx, iso3, name, score, fill, d };
+    });
+  }, [fc, scores, colorStops, pathGen]);
+
+  const width = size.w;
+  const height = size.h;
+  const projection = useMemo(() => createProjection(width, height), [width, height]);
+  const pathGen = useMemo(() => geoPath(projection), [projection]);
 
   useEffect(() => {
     handleResize();
@@ -180,64 +239,6 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
     );
   }
 
-  const width = size.w;
-  const height = size.h;
-  const projection = useMemo(() => createProjection(width, height), [width, height]);
-  const pathGen = useMemo(() => geoPath(projection), [projection]);
-
-  // Optimized mouse handlers with debouncing
-  const handleMouseMove = useCallback((e: React.MouseEvent<SVGPathElement>, name: string, score: number | null) => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    
-    hoverTimeoutRef.current = setTimeout(() => {
-      const bounds = (e.currentTarget.ownerSVGElement)?.getBoundingClientRect();
-      const px = e.clientX - (bounds?.left || 0);
-      const py = e.clientY - (bounds?.top || 0);
-      setHover({ name, score, pos: { x: px, y: py } });
-    }, 16); // ~60fps throttling
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (hoverTimeoutRef.current) {
-      clearTimeout(hoverTimeoutRef.current);
-    }
-    setHover(null);
-  }, []);
-
-  const handleClick = useCallback(async (name: string, iso3?: string) => {
-    setSelected({ name, iso3, loading: true });
-    try {
-      const qName = encodeURIComponent(name);
-      const qIso = iso3 ? `&iso3=${encodeURIComponent(iso3)}` : "";
-      const res = await fetch(`/api/time?country=${qName}${qIso}`);
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || `Zaman bilgisi alınamadı (${res.status})`);
-      }
-      const data = await res.json();
-      setSelected({ name, iso3, loading: false, time: data.datetime, timezone: data.timezone });
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : String(e);
-      setSelected({ name, iso3, loading: false, error: msg });
-    }
-  }, []);
-
-  // Pre-compute feature data for better performance
-  const featuresData = useMemo(() => {
-    if (!fc) return [];
-    return fc.features.map((f, idx) => {
-      const iso3Raw = pickIso3(f);
-      const iso3 = typeof iso3Raw === "string" ? iso3Raw.toUpperCase() : undefined;
-      const name = pickName(f);
-      const score = iso3 ? scores[iso3] : undefined;
-      const val = typeof score === "number" ? clamp(score) : 0;
-      const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1";
-      const d = pathGen(f as any) || undefined;
-      return { idx, iso3, name, score, fill, d };
-    });
-  }, [fc, scores, colorStops, pathGen]);
 
   return (
     <div className="w-full" ref={containerRef}>
