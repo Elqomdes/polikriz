@@ -92,6 +92,8 @@ function pickIso3(f: Feature): string | undefined {
   const p = f.properties;
   return (
     getStringProp(p, "ISO_A3") ||
+    getStringProp(p, "ISO_A3_EH") ||
+    getStringProp(p, "WB_A3") ||
     getStringProp(p, "ADM0_A3") ||
     getStringProp(p, "ISO3") ||
     getStringProp(p, "iso3") ||
@@ -119,6 +121,7 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
   const [fc, setFc] = useState<FeatureCollection | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hover, setHover] = useState<{ name: string; score: number | null; pos: Position } | null>(null);
+  const [selected, setSelected] = useState<{ name: string; iso3?: string; time?: string; timezone?: string; loading: boolean; error?: string } | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState<{ w: number; h: number }>({ w: 800, h: 420 });
 
@@ -206,8 +209,8 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
               key={idx}
               d={d}
               fill={fill}
-              stroke="#ffffff"
-              strokeWidth={0.5}
+              stroke={hover?.name === name ? "#111827" : "#ffffff"}
+              strokeWidth={hover?.name === name ? 1.5 : 0.5}
               className="cursor-pointer"
               onMouseMove={(e) => {
                 const bounds = (e.currentTarget.ownerSVGElement)?.getBoundingClientRect();
@@ -216,6 +219,23 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
                 setHover({ name, score: typeof score === "number" ? score : null, pos: { x: px, y: py } });
               }}
               onMouseLeave={() => setHover(null)}
+              onClick={async () => {
+                setSelected({ name, iso3, loading: true });
+                try {
+                  const qName = encodeURIComponent(name);
+                  const qIso = iso3 ? `&iso3=${encodeURIComponent(iso3)}` : "";
+                  const res = await fetch(`/api/time?country=${qName}${qIso}`);
+                  if (!res.ok) {
+                    const msg = await res.text();
+                    throw new Error(msg || `Zaman bilgisi alınamadı (${res.status})`);
+                  }
+                  const data = await res.json();
+                  setSelected({ name, iso3, loading: false, time: data.datetime, timezone: data.timezone });
+                } catch (e: unknown) {
+                  const msg = e instanceof Error ? e.message : String(e);
+                  setSelected({ name, iso3, loading: false, error: msg });
+                }
+              }}
             />
           );
         })}
@@ -233,6 +253,18 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
         )}
       </svg>
       {legend}
+      {selected && (
+        <div className="mt-2 text-xs">
+          <div className="inline-flex items-center gap-2 px-2 py-1 rounded border border-black/10 dark:border-white/10 bg-white/80 dark:bg-black/60 backdrop-blur">
+            <span className="font-medium">{selected.name}</span>
+            {selected.loading && <span className="opacity-70">yükleniyor…</span>}
+            {selected.error && <span className="text-red-600 dark:text-red-400">{selected.error}</span>}
+            {!selected.loading && !selected.error && selected.time && (
+              <span className="opacity-80">{selected.time} ({selected.timezone})</span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 });
