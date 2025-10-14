@@ -1,5 +1,6 @@
 "use client";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { geoPath, geoNaturalEarth1, GeoProjection } from "d3-geo";
 
 type Props = {
   scores: Record<string, number>; // ISO3 -> score 0..1
@@ -53,34 +54,9 @@ function interpolateColors(stops: string[], t: number) {
 }
 
 // Simple equirectangular projection (lon,lat in degrees) -> (x,y) in [0, width]x[0,height]
-function projectEquirectangular(lon: number, lat: number, width: number, height: number): Position {
-  const x = (lon + 180) / 360 * width;
-  const y = (90 - lat) / 180 * height;
-  return { x, y };
-}
-
-function featureToPath(feature: Feature, width: number, height: number) {
-  const type = feature.geometry.type;
-  const coords: number[][][] | number[][][][] = feature.geometry.coordinates;
-  const pathParts: string[] = [];
-  const drawPolygon = (poly: number[][][]) => {
-    for (let r = 0; r < poly.length; r++) {
-      const ring = poly[r];
-      for (let i = 0; i < ring.length; i++) {
-        const [lon, lat] = ring[i];
-        const { x, y } = projectEquirectangular(lon, lat, width, height);
-        pathParts.push(i === 0 ? `M${x.toFixed(2)},${y.toFixed(2)}` : `L${x.toFixed(2)},${y.toFixed(2)}`);
-      }
-      pathParts.push("Z");
-    }
-  };
-  if (type === "Polygon") {
-    drawPolygon(coords as number[][][]);
-  } else if (type === "MultiPolygon") {
-    const multipoly = coords as number[][][][];
-    for (let p = 0; p < multipoly.length; p++) drawPolygon(multipoly[p]);
-  }
-  return pathParts.join(" ");
+// d3 projection and path builder for accurate world shapes
+function createProjection(width: number, height: number): GeoProjection {
+  return geoNaturalEarth1().fitSize([width, height], { type: "Sphere" } as any);
 }
 
 function getStringProp(obj: Record<string, unknown> | undefined, key: string): string | undefined {
@@ -145,10 +121,17 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
     // Use a lightweight GeoJSON source (no extra deps)
     // Countries maritime 10m keeps ISO_A3 and ADMIN names
     const url = "/api/world";
-    fetch(url)
+    const tryFetch = (u: string) => fetch(u).then(r => {
+      if (!r.ok) throw new Error(`GeoJSON yüklenemedi: ${r.status}`);
+      return r.json();
+    });
+    tryFetch(url)
       .then(r => {
-        if (!r.ok) throw new Error(`GeoJSON yüklenemedi: ${r.status}`);
-        return r.json();
+        return r as FeatureCollection;
+      })
+      .catch(async () => {
+        // Fallback to static public file if api fails
+        return tryFetch("/world-countries.min.geo.json") as Promise<FeatureCollection>;
       })
       .then((data: FeatureCollection) => {
         if (cancelled) return;
@@ -197,10 +180,12 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
 
   const width = size.w;
   const height = size.h;
+  const projection = useMemo(() => createProjection(width, height), [width, height]);
+  const pathGen = useMemo(() => geoPath(projection), [projection]);
 
   return (
     <div className="w-full" ref={containerRef}>
-      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height="auto" role="img" aria-label="Dünya polikriz ısısı haritası">
+      <svg viewBox={`0 0 ${width} ${height}`} width="100%" height={height} role="img" aria-label="Dünya polikriz ısısı haritası" preserveAspectRatio="xMidYMid meet">
         <rect x={0} y={0} width={width} height={height} fill="#eef2f7" className="dark:fill-[#0b1220]" />
         {fc.features.map((f, idx) => {
           const iso3Raw = pickIso3(f);
@@ -209,7 +194,7 @@ const WorldHeatmap = memo(function WorldHeatmap({ scores }: Props) {
           const score = iso3 ? scores[iso3] : undefined;
           const val = typeof score === "number" ? clamp(score) : 0;
           const fill = typeof score === "number" ? interpolateColors(colorStops, val) : "#cbd5e1"; // higher-contrast default fill
-          const d = featureToPath(f, width, height);
+          const d = pathGen(f as any) || undefined;
           return (
             <path
               key={idx}
