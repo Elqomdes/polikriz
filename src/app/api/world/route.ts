@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 const SOURCES = [
   "https://unpkg.com/@geo-maps/countries-maritime-10m@1.7.1/countries-maritime-10m.geo.json",
@@ -17,6 +19,17 @@ async function fetchWithTimeout(url: string, timeoutMs: number) {
 }
 
 export async function GET() {
+  // 1) Try local file from public (best for reliability)
+  try {
+    const filePath = path.join(process.cwd(), "public", "world-countries.min.geo.json");
+    const buf = await fs.readFile(filePath, "utf-8");
+    const data = JSON.parse(buf);
+    return NextResponse.json(data, { headers: { "Cache-Control": "public, max-age=604800" } });
+  } catch {
+    // continue
+  }
+
+  // 2) Try external mirrors with timeouts
   for (const url of SOURCES) {
     try {
       const res = await fetchWithTimeout(url, 8000);
@@ -32,7 +45,26 @@ export async function GET() {
       // try next source
     }
   }
-  return NextResponse.json({ error: "GeoJSON fetch failed" }, { status: 502 });
+
+  // 3) Final fallback: minimal valid FeatureCollection (single coarse world polygon)
+  const fallback = {
+    type: "FeatureCollection",
+    features: [
+      {
+        type: "Feature",
+        properties: { ADMIN: "World", ISO_A3: "WLD" },
+        geometry: {
+          type: "Polygon",
+          coordinates: [
+            [
+              [-180, -60], [-180, 85], [180, 85], [180, -60], [-180, -60],
+            ],
+          ],
+        },
+      },
+    ],
+  };
+  return NextResponse.json(fallback, { headers: { "Cache-Control": "no-store" } });
 }
 
 
