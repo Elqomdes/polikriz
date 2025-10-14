@@ -1,19 +1,24 @@
 import { NextRequest } from "next/server";
 
-async function fetchJson(url: string, init?: RequestInit) {
+type RestCountry = {
+  timezones?: string[];
+  name?: { common?: string };
+  cca3?: string;
+};
+
+async function fetchJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers: { ...(init?.headers || {}), "user-agent": "polikriz-app" } });
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || `HTTP ${res.status}`);
   }
-  return res.json();
+  return res.json() as Promise<T>;
 }
 
-function pickPrimaryTimezone(country: any): string | undefined {
-  const tzs = Array.isArray(country?.timezones) ? country.timezones : undefined;
+function pickPrimaryTimezone(country: RestCountry | null): string | undefined {
+  const tzs = Array.isArray(country?.timezones) ? country?.timezones : undefined;
   if (!tzs || tzs.length === 0) return undefined;
-  // Prefer a single canonical tz string like "Europe/Istanbul" if present; otherwise first
-  const first = tzs.find((t: string) => t.includes("/")) || tzs[0];
+  const first = tzs.find((t) => t.includes("/")) || tzs[0];
   return first;
 }
 
@@ -28,17 +33,17 @@ export async function GET(req: NextRequest) {
 
     // 1) Resolve country -> primary timezone via RestCountries
     // Prefer ISO3 alpha lookup if provided (more reliable), fallback to name search
-    let match: any = null;
+    let match: RestCountry | null = null;
     if (iso3 && iso3.length === 3) {
       try {
-        const rcAlpha = await fetchJson(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(iso3)}`);
-        match = Array.isArray(rcAlpha) && rcAlpha.length > 0 ? rcAlpha[0] : rcAlpha;
+        const rcAlpha = await fetchJson<RestCountry | RestCountry[]>(`https://restcountries.com/v3.1/alpha/${encodeURIComponent(iso3)}`);
+        match = Array.isArray(rcAlpha) && rcAlpha.length > 0 ? rcAlpha[0] : (rcAlpha as RestCountry);
       } catch {
         // ignore and fallback to name
       }
     }
     if (!match) {
-      const rc = await fetchJson(`https://restcountries.com/v3.1/name/${encodeURIComponent(country)}?fields=name,timezones,cca3`);
+      const rc = await fetchJson<RestCountry[]>(`https://restcountries.com/v3.1/name/${encodeURIComponent(country)}?fields=name,timezones,cca3`);
       match = Array.isArray(rc) && rc.length > 0 ? rc[0] : null;
     }
     const timezone = pickPrimaryTimezone(match);
