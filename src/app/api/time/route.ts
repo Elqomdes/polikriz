@@ -6,6 +6,11 @@ type RestCountry = {
   cca3?: string;
 };
 
+type WorldTimeApi = {
+  datetime?: string;
+  timezone?: string;
+};
+
 async function fetchJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, { ...init, headers: { ...(init?.headers || {}), "user-agent": "polikriz-app" } });
   if (!res.ok) {
@@ -52,8 +57,8 @@ export async function GET(req: NextRequest) {
     }
 
     // 2) Get current time from WorldTimeAPI (no api key required)
-    const wt = await fetchJson(`https://worldtimeapi.org/api/timezone/${encodeURIComponent(timezone)}`);
-    const datetime: string | undefined = wt?.datetime;
+    const wt = await fetchJson<WorldTimeApi>(`https://worldtimeapi.org/api/timezone/${encodeURIComponent(timezone)}`);
+    const datetime: string | undefined = wt.datetime;
     if (!datetime) {
       return new Response("time not available", { status: 502 });
     }
