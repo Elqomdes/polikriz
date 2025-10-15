@@ -1,0 +1,118 @@
+<svg width="2048" height="1024" viewBox="0 0 2048 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Ocean gradient -->
+    <linearGradient id="ocean" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1d4ed8;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Land gradient -->
+    <linearGradient id="land" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#365314;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4ade80;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Desert gradient -->
+    <linearGradient id="desert" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a3a3a3;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#d4d4d8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f4f4f5;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Ocean background -->
+  <rect width="2048" height="1024" fill="url(#ocean)"/>
+  
+  <!-- North America -->
+  <g fill="url(#land)">
+    <!-- Alaska -->
+    <path d="M150,180 L200,160 L250,180 L280,200 L270,220 L240,230 L200,220 L160,200 Z"/>
+    <!-- Canada -->
+    <path d="M200,200 L350,180 L400,200 L420,250 L400,300 L350,320 L300,310 L250,280 L200,250 Z"/>
+    <!-- USA -->
+    <path d="M250,280 L400,260 L450,300 L420,350 L380,380 L320,370 L280,340 L250,300 Z"/>
+    <!-- Mexico -->
+    <path d="M280,340 L350,330 L380,360 L370,380 L340,390 L300,380 L280,360 Z"/>
+    <!-- Central America -->
+    <path d="M300,380 L350,375 L360,400 L350,420 L320,425 L300,400 Z"/>
+  </g>
+  
+  <!-- South America -->
+  <g fill="url(#land)">
+    <path d="M350,450 L400,440 L420,500 L410,600 L380,650 L350,680 L320,650 L300,600 L310,500 L330,460 Z"/>
+  </g>
+  
+  <!-- Europe -->
+  <g fill="url(#land)">
+    <!-- Scandinavia -->
+    <path d="M800,180 L850,170 L880,190 L870,210 L840,220 L810,210 Z"/>
+    <!-- Main Europe -->
+    <path d="M800,200 L950,190 L1000,220 L980,280 L920,300 L850,290 L800,250 Z"/>
+    <!-- Iberian Peninsula -->
+    <path d="M750,280 L800,275 L820,300 L810,320 L780,325 L750,300 Z"/>
+    <!-- Italy -->
+    <path d="M850,300 L880,295 L890,320 L880,350 L860,355 L850,330 Z"/>
+    <!-- Balkans -->
+    <path d="M900,300 L950,295 L970,320 L960,350 L930,355 L900,330 Z"/>
+  </g>
+  
+  <!-- Africa -->
+  <g fill="url(#desert)">
+    <!-- North Africa -->
+    <path d="M750,350 L950,340 L980,380 L960,420 L900,430 L850,420 L800,400 L750,380 Z"/>
+    <!-- West Africa -->
+    <path d="M700,420 L800,410 L820,450 L810,500 L780,520 L750,500 L720,460 Z"/>
+    <!-- Central Africa -->
+    <path d="M800,450 L900,440 L920,500 L900,600 L850,620 L800,600 L780,500 Z"/>
+    <!-- East Africa -->
+    <path d="M900,500 L1000,490 L1020,550 L1000,650 L950,670 L900,650 L880,550 Z"/>
+    <!-- South Africa -->
+    <path d="M850,650 L950,640 L970,700 L950,750 L900,760 L850,750 L830,700 Z"/>
+  </g>
+  
+  <!-- Asia -->
+  <g fill="url(#land)">
+    <!-- Siberia -->
+    <path d="M1000,150 L1400,140 L1450,200 L1400,300 L1200,320 L1000,300 L950,200 Z"/>
+    <!-- China -->
+    <path d="M1200,300 L1400,290 L1450,400 L1400,500 L1300,520 L1200,500 L1150,400 Z"/>
+    <!-- India -->
+    <path d="M1100,400 L1200,390 L1250,450 L1220,500 L1150,520 L1100,500 L1080,450 Z"/>
+    <!-- Southeast Asia -->
+    <path d="M1200,450 L1400,440 L1450,500 L1400,600 L1300,620 L1200,600 L1150,500 Z"/>
+    <!-- Japan -->
+    <path d="M1400,300 L1450,295 L1470,320 L1460,350 L1430,355 L1400,330 Z"/>
+    <!-- Korean Peninsula -->
+    <path d="M1380,320 L1420,315 L1430,340 L1420,360 L1390,365 L1380,340 Z"/>
+  </g>
+  
+  <!-- Australia -->
+  <g fill="url(#desert)">
+    <path d="M1400,600 L1600,590 L1650,650 L1600,700 L1500,720 L1400,700 L1350,650 Z"/>
+  </g>
+  
+  <!-- Antarctica -->
+  <g fill="#f8fafc">
+    <path d="M0,950 L2048,950 L2048,1024 L0,1024 Z"/>
+  </g>
+  
+  <!-- Grid lines for reference -->
+  <g stroke="#3b82f6" stroke-width="0.5" opacity="0.2">
+    <!-- Latitude lines -->
+    <line x1="0" y1="256" x2="2048" y2="256"/>
+    <line x1="0" y1="512" x2="2048" y2="512"/>
+    <line x1="0" y1="768" x2="2048" y2="768"/>
+    <!-- Longitude lines -->
+    <line x1="512" y1="0" x2="512" y2="1024"/>
+    <line x1="1024" y1="0" x2="1024" y2="1024"/>
+    <line x1="1536" y1="0" x2="1536" y2="1024"/>
+  </g>
+  
+  <!-- Equator -->
+  <line x1="0" y1="512" x2="2048" y2="512" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+  
+  <!-- Prime Meridian -->
+  <line x1="1024" y1="0" x2="1024" y2="1024" stroke="#ef4444" stroke-width="2" opacity="0.5"/>
+</svg>

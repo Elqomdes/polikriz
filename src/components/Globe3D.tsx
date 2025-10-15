@@ -185,8 +185,9 @@ function CountryMarker({ country, onCountryClick }: { country: CountryData; onCo
 function Globe({ scores, onCountryClick }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Dünya haritası texture'ı
-  const worldTexture = useTexture('/world-map.svg');
+  // Gerçek dünya haritası texture'ı
+  const worldTexture = useTexture('/world-map-real.svg');
+  const nightLightsTexture = useTexture('/world-night-lights.svg');
   
   const countries = useMemo(() => {
     return Object.entries(scores).map(([iso3, score]) => {
@@ -212,12 +213,25 @@ function Globe({ scores, onCountryClick }: Props) {
   return (
     <>
       <mesh ref={meshRef}>
-        <sphereGeometry args={[1, 64, 64]} />
+        <sphereGeometry args={[1, 128, 128]} />
         <meshPhongMaterial 
           map={worldTexture}
+          shininess={30}
+          specular={0x111111}
           transparent 
-          opacity={0.9}
+          opacity={1.0}
           wireframe={false}
+        />
+      </mesh>
+      
+      {/* Night lights layer */}
+      <mesh>
+        <sphereGeometry args={[1.001, 128, 128]} />
+        <meshBasicMaterial 
+          map={nightLightsTexture}
+          transparent 
+          opacity={0.6}
+          blending={THREE.AdditiveBlending}
         />
       </mesh>
       
@@ -225,9 +239,18 @@ function Globe({ scores, onCountryClick }: Props) {
         <CountryMarker key={country.iso3} country={country} onCountryClick={onCountryClick} />
       ))}
       
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[1, 1, 1]} intensity={1.2} />
-      <pointLight position={[-1, -1, -1]} intensity={0.3} />
+      <ambientLight intensity={0.4} />
+      <directionalLight 
+        position={[2, 2, 2]} 
+        intensity={1.5}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+      />
+      <pointLight position={[-2, -2, -2]} intensity={0.2} color="#4a90e2" />
+      <hemisphereLight 
+        args={["#87CEEB", "#8B4513", 0.3]} 
+      />
     </>
   );
 }
