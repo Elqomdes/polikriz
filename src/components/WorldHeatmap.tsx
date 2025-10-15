@@ -55,6 +55,8 @@ function getStringProp(obj: GeoJSON.GeoJsonProperties | undefined, key: string):
 function pickIso3(f: Feature): string | undefined {
   const p = f.properties;
   return (
+    // Common ISO3 keys across various datasets
+    getStringProp(p, "ISO3166-1-Alpha-3") ||
     getStringProp(p, "ISO_A3") ||
     getStringProp(p, "ISO_A3_EH") ||
     getStringProp(p, "WB_A3") ||
