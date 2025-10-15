@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import Globe3D from "@/components/Globe3D";
+import WorldHeatmap from "@/components/WorldHeatmap";
 
 export default function Home() {
   const handleCountryClick = (countryName: string, iso3?: string) => {
@@ -26,19 +26,19 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Main Globe Section */}
+        {/* Main Map Section */}
         <section className="mb-12">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-                3D Dünya Haritası
+                Dünya Haritası
               </h2>
               <p className="text-gray-600 dark:text-gray-300">
                 Ülkelerin üzerine gelerek detayları görüntüleyin ve tıklayarak analiz sayfasına gidin
               </p>
             </div>
             <div className="relative">
-              <Globe3D 
+              <WorldHeatmap
                 scores={{ 
                   TUR: 0.6, USA: 0.3, DEU: 0.4, FRA: 0.35, CHN: 0.7, GBR: 0.5, RUS: 0.8, 
                   IND: 0.4, BRA: 0.3, JPN: 0.2, CAN: 0.25, AUS: 0.3, ITA: 0.45, ESP: 0.4,
@@ -53,8 +53,7 @@ export default function Home() {
                   EST: 0.3, FIN: 0.2, SWE: 0.2, NOR: 0.2, DNK: 0.2, ISL: 0.2, IRL: 0.3,
                   NLD: 0.3, BEL: 0.3, LUX: 0.2, CHE: 0.2, AUT: 0.3, SVK: 0.3, SVN: 0.3,
                   HRV: 0.4, BIH: 0.6, SRB: 0.5, MNE: 0.4, MKD: 0.5, ALB: 0.5, KOS: 0.6
-                }} 
-                onCountryClick={handleCountryClick}
+                }}
               />
             </div>
           </div>
