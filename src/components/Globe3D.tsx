@@ -7,6 +7,8 @@ import * as THREE from "three";
 type Props = {
   scores: Record<string, number>; // ISO3 -> score 0..1
   onCountryClick?: (countryName: string, iso3?: string) => void;
+  isNight?: boolean;
+  showAtmosphere?: boolean;
 };
 
 type CountryData = {
@@ -182,14 +184,29 @@ function CountryMarker({ country, onCountryClick }: { country: CountryData; onCo
   );
 }
 
-function Globe({ scores, onCountryClick }: Props) {
+function Globe({ scores, onCountryClick, isNight = false, showAtmosphere = true }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
   
-  // Gerçek dünya haritası texture'ı
-  const worldTexture = useTexture('/earth-texture.svg', (texture) => {
+  // Gerçek dünya haritası texture'ları
+  const worldTexture = useTexture('/earth-texture-real.svg', (texture) => {
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
     texture.flipY = false;
+    texture.anisotropy = 16;
+  });
+  
+  const nightLightsTexture = useTexture('/earth-night-lights.svg', (texture) => {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.flipY = false;
+    texture.anisotropy = 16;
+  });
+  
+  const normalTexture = useTexture('/earth-normal.svg', (texture) => {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.flipY = false;
+    texture.anisotropy = 16;
   });
   
   const countries = useMemo(() => {
@@ -215,53 +232,105 @@ function Globe({ scores, onCountryClick }: Props) {
 
   return (
     <>
+      {/* Main Earth Sphere */}
       <mesh ref={meshRef}>
-        <sphereGeometry args={[1, 128, 128]} />
+        <sphereGeometry args={[1, 256, 256]} />
         <meshPhongMaterial 
           map={worldTexture}
-          shininess={30}
-          specular={0x111111}
+          normalMap={normalTexture}
+          normalScale={[0.5, 0.5]}
+          shininess={100}
+          specular={0x222222}
           transparent={false}
           opacity={1.0}
           wireframe={false}
+          side={THREE.DoubleSide}
         />
       </mesh>
       
+      {/* Night Lights Layer */}
+      <mesh>
+        <sphereGeometry args={[1.001, 256, 256]} />
+        <meshBasicMaterial 
+          map={nightLightsTexture}
+          transparent={true}
+          opacity={isNight ? 0.8 : 0.0}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      
+      {/* Atmosphere Glow */}
+      {showAtmosphere && (
+        <mesh>
+          <sphereGeometry args={[1.1, 64, 64]} />
+          <meshBasicMaterial 
+            color="#87CEEB"
+            transparent={true}
+            opacity={0.15}
+            side={THREE.BackSide}
+          />
+        </mesh>
+      )}
+      
+      {/* Country Markers */}
       {countries.map((country) => (
         <CountryMarker key={country.iso3} country={country} onCountryClick={onCountryClick} />
       ))}
       
-      <ambientLight intensity={0.4} />
+      {/* Professional Lighting Setup */}
+      <ambientLight intensity={0.3} color="#404040" />
       <directionalLight 
-        position={[2, 2, 2]} 
-        intensity={1.5}
+        position={[5, 3, 5]} 
+        intensity={1.2}
+        color="#ffffff"
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
+        shadow-camera-far={50}
+        shadow-camera-left={-10}
+        shadow-camera-right={10}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-10}
       />
-      <pointLight position={[-2, -2, -2]} intensity={0.2} color="#4a90e2" />
+      <directionalLight 
+        position={[-3, -2, -3]} 
+        intensity={0.3}
+        color="#4a90e2"
+      />
+      <pointLight 
+        position={[0, 0, 5]} 
+        intensity={0.1} 
+        color="#ffffff"
+        distance={20}
+      />
       <hemisphereLight 
-        args={["#87CEEB", "#8B4513", 0.3]} 
+        args={["#87CEEB", "#8B4513", 0.4]} 
       />
     </>
   );
 }
 
 export default function Globe3D({ scores, onCountryClick }: Props) {
+  const [isNight, setIsNight] = useState(false);
+  const [autoRotate, setAutoRotate] = useState(false);
+  const [showAtmosphere, setShowAtmosphere] = useState(true);
+  
   return (
     <div className="w-full h-[600px] relative bg-gradient-to-br from-slate-100 to-blue-100 dark:from-gray-800 dark:to-slate-800 rounded-lg overflow-hidden">
       <Canvas
         camera={{ position: [0, 0, 3], fov: 50 }}
         style={{ background: 'transparent' }}
+        shadows
       >
-        <Globe scores={scores} onCountryClick={onCountryClick} />
+        <Globe scores={scores} onCountryClick={onCountryClick} isNight={isNight} showAtmosphere={showAtmosphere} />
         <OrbitControls
           enablePan={false}
           enableZoom={true}
           enableRotate={true}
           minDistance={1.5}
           maxDistance={5}
-          autoRotate={false}
+          autoRotate={autoRotate}
+          autoRotateSpeed={0.5}
         />
       </Canvas>
       
@@ -280,6 +349,36 @@ export default function Globe3D({ scores, onCountryClick }: Props) {
             {Object.keys(scores).length} ülke
           </div>
         </div>
+      </div>
+      
+      {/* Professional Controls Panel */}
+      <div className="absolute top-4 right-4 flex flex-col gap-2">
+        <button
+          onClick={() => setIsNight(!isNight)}
+          className="bg-white/90 dark:bg-gray-900/90 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors"
+        >
+          <div className="text-xs font-medium text-gray-900 dark:text-white">
+            {isNight ? '🌙' : '☀️'} {isNight ? 'Gece' : 'Gündüz'}
+          </div>
+        </button>
+        
+        <button
+          onClick={() => setAutoRotate(!autoRotate)}
+          className="bg-white/90 dark:bg-gray-900/90 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors"
+        >
+          <div className="text-xs font-medium text-gray-900 dark:text-white">
+            {autoRotate ? '⏸️' : '▶️'} {autoRotate ? 'Durdur' : 'Döndür'}
+          </div>
+        </button>
+        
+        <button
+          onClick={() => setShowAtmosphere(!showAtmosphere)}
+          className="bg-white/90 dark:bg-gray-900/90 px-3 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-800 transition-colors"
+        >
+          <div className="text-xs font-medium text-gray-900 dark:text-white">
+            {showAtmosphere ? '🌍' : '🌎'} Atmosfer
+          </div>
+        </button>
       </div>
       
       {/* Professional Legend */}

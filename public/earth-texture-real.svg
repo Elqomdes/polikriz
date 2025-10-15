@@ -1,0 +1,183 @@
+<svg width="4096" height="2048" viewBox="0 0 4096 2048" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Ocean gradients with realistic depth -->
+    <linearGradient id="deepOcean" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#001122;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#002244;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#003366;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#004488;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="shallowOcean" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#003366;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#0066aa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0088cc;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Land gradients with realistic terrain -->
+    <linearGradient id="forest" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a3d1a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#2d5a2d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3d6b3d;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="grassland" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a5d23;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#6b7c32;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8b9a42;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="desert" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b7355;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a68b5b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c4a574;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="tundra" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6b7c69;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#8b9a8b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#a8b5a8;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="mountain" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2d2d2d;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4a4a4a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6b6b6b;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Ice and snow -->
+    <linearGradient id="ice" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f8ff;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#e6f3ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ddeeff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Ocean background -->
+  <rect width="4096" height="2048" fill="url(#deepOcean)"/>
+  
+  <!-- North America - Detailed realistic shapes -->
+  <g fill="url(#forest)">
+    <!-- Alaska with realistic shape -->
+    <path d="M200,200 L350,180 L450,200 L500,250 L480,300 L400,320 L300,300 L250,250 L200,220 Z"/>
+    <!-- Canada -->
+    <path d="M300,250 L600,220 L700,280 L720,350 L680,420 L600,450 L500,430 L400,400 L350,350 L300,300 Z"/>
+    <!-- USA - Continental shape -->
+    <path d="M400,400 L700,380 L750,450 L720,520 L650,550 L550,540 L480,500 L420,450 L400,400 Z"/>
+    <!-- Mexico -->
+    <path d="M480,500 L650,490 L680,530 L650,570 L580,580 L520,570 L480,540 Z"/>
+    <!-- Central America -->
+    <path d="M520,570 L650,565 L670,590 L650,620 L580,625 L520,600 Z"/>
+  </g>
+  
+  <!-- South America - More detailed -->
+  <g fill="url(#forest)">
+    <!-- Brazil and Amazon -->
+    <path d="M650,700 L850,680 L900,750 L880,850 L800,900 L700,880 L650,800 L650,700 Z"/>
+    <!-- Argentina and Chile -->
+    <path d="M700,850 L800,840 L820,950 L800,1050 L750,1080 L700,1050 L680,950 L700,850 Z"/>
+    <!-- Andes Mountains -->
+    <path d="M750,800 L760,790 L770,800 L760,810 L750,800 Z" fill="url(#mountain)"/>
+  </g>
+  
+  <!-- Europe - Detailed with realistic coastlines -->
+  <g fill="url(#grassland)">
+    <!-- Scandinavia -->
+    <path d="M1800,200 L2000,180 L2100,220 L2080,280 L2000,300 L1900,280 L1800,250 Z"/>
+    <!-- Main Europe -->
+    <path d="M1800,300 L2200,280 L2300,350 L2250,450 L2150,480 L2000,470 L1850,420 L1800,350 Z"/>
+    <!-- Iberian Peninsula -->
+    <path d="M1600,400 L1800,390 L1850,420 L1820,460 L1700,470 L1600,450 Z"/>
+    <!-- Italy -->
+    <path d="M2000,450 L2100,440 L2120,480 L2100,520 L2050,530 L2000,500 Z"/>
+    <!-- Balkans -->
+    <path d="M2100,450 L2250,440 L2280,480 L2250,520 L2200,530 L2100,500 Z"/>
+    <!-- British Isles -->
+    <path d="M1700,300 L1800,295 L1820,320 L1800,340 L1750,345 L1700,325 Z"/>
+  </g>
+  
+  <!-- Africa - Detailed with realistic terrain -->
+  <g fill="url(#desert)">
+    <!-- North Africa (Sahara) -->
+    <path d="M1600,500 L2200,480 L2300,550 L2250,650 L2100,680 L1900,670 L1700,620 L1600,550 Z"/>
+    <!-- West Africa -->
+    <path d="M1400,600 L1800,580 L1850,650 L1800,750 L1600,780 L1400,750 L1350,650 Z"/>
+    <!-- Central Africa (Congo) -->
+    <path d="M1800,650 L2000,630 L2050,750 L2000,900 L1850,950 L1800,900 L1750,750 Z"/>
+    <!-- East Africa -->
+    <path d="M2000,700 L2200,680 L2250,800 L2200,950 L2100,1000 L2000,950 L1950,800 Z"/>
+    <!-- South Africa -->
+    <path d="M1900,900 L2100,880 L2150,1000 L2100,1150 L2000,1200 L1900,1150 L1850,1000 Z"/>
+  </g>
+  
+  <!-- Asia - Massive continent with diverse terrain -->
+  <g fill="url(#grassland)">
+    <!-- Siberia -->
+    <path d="M2200,150 L3200,120 L3400,200 L3300,400 L3000,450 L2500,420 L2200,350 L2000,250 Z"/>
+    <!-- China -->
+    <path d="M2800,400 L3400,380 L3500,500 L3400,650 L3200,700 L2800,680 L2600,600 L2500,500 Z"/>
+    <!-- India -->
+    <path d="M2500,500 L2800,480 L2900,550 L2850,650 L2700,700 L2500,680 L2400,600 Z"/>
+    <!-- Southeast Asia -->
+    <path d="M2800,550 L3400,530 L3500,650 L3400,800 L3200,850 L2800,830 L2700,750 Z"/>
+    <!-- Japan -->
+    <path d="M3400,500 L3500,495 L3520,530 L3500,570 L3450,575 L3400,550 Z"/>
+    <!-- Korean Peninsula -->
+    <path d="M3350,520 L3450,515 L3470,540 L3450,560 L3400,565 L3350,545 Z"/>
+  </g>
+  
+  <!-- Australia - Detailed with realistic shape -->
+  <g fill="url(#desert)">
+    <path d="M3200,1000 L3800,980 L3900,1100 L3850,1250 L3700,1300 L3500,1280 L3300,1200 L3200,1100 Z"/>
+  </g>
+  
+  <!-- Antarctica - Ice covered -->
+  <g fill="url(#ice)">
+    <path d="M0,1800 L4096,1800 L4096,2048 L0,2048 Z"/>
+  </g>
+  
+  <!-- Mountain ranges with realistic placement -->
+  <g fill="url(#mountain)" opacity="0.8">
+    <!-- Himalayas -->
+    <path d="M2500,500 L2800,490 L2850,520 L2800,550 L2500,560 L2450,530 Z"/>
+    <!-- Andes -->
+    <path d="M700,800 L720,780 L740,800 L720,820 L700,800 Z"/>
+    <!-- Rockies -->
+    <path d="M300,350 L400,340 L420,370 L400,400 L350,410 L300,380 Z"/>
+    <!-- Alps -->
+    <path d="M1900,400 L2000,395 L2020,420 L2000,450 L1950,455 L1900,430 Z"/>
+    <!-- Ural Mountains -->
+    <path d="M2200,300 L2400,290 L2420,320 L2400,350 L2300,360 L2200,340 Z"/>
+  </g>
+  
+  <!-- Major rivers -->
+  <g stroke="#4a90e2" stroke-width="2" fill="none" opacity="0.6">
+    <!-- Amazon -->
+    <path d="M700,750 L750,760 L800,770 L850,780 L900,790"/>
+    <!-- Nile -->
+    <path d="M2000,600 L2100,620 L2200,640 L2300,660"/>
+    <!-- Mississippi -->
+    <path d="M500,450 L550,460 L600,470 L650,480"/>
+    <!-- Yangtze -->
+    <path d="M3000,500 L3100,520 L3200,540 L3300,560"/>
+  </g>
+  
+  <!-- Cloud patterns for realism -->
+  <g fill="#ffffff" opacity="0.3">
+    <!-- Cloud clusters -->
+    <ellipse cx="1000" cy="300" rx="80" ry="40"/>
+    <ellipse cx="2500" cy="400" rx="100" ry="50"/>
+    <ellipse cx="1500" cy="600" rx="60" ry="30"/>
+    <ellipse cx="3000" cy="700" rx="90" ry="45"/>
+  </g>
+  
+  <!-- Atmospheric glow -->
+  <defs>
+    <radialGradient id="atmosphere" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#87ceeb;stop-opacity:0.1" />
+      <stop offset="70%" style="stop-color:#4682b4;stop-opacity:0.05" />
+      <stop offset="100%" style="stop-color:#000080;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  <circle cx="2048" cy="1024" r="1200" fill="url(#atmosphere)"/>
+</svg>
