@@ -186,8 +186,11 @@ function Globe({ scores, onCountryClick }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
   
   // Gerçek dünya haritası texture'ı
-  const worldTexture = useTexture('/world-map-real.svg');
-  const nightLightsTexture = useTexture('/world-night-lights.svg');
+  const worldTexture = useTexture('/earth-texture.svg', (texture) => {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.flipY = false;
+  });
   
   const countries = useMemo(() => {
     return Object.entries(scores).map(([iso3, score]) => {
@@ -218,20 +221,9 @@ function Globe({ scores, onCountryClick }: Props) {
           map={worldTexture}
           shininess={30}
           specular={0x111111}
-          transparent 
+          transparent={false}
           opacity={1.0}
           wireframe={false}
-        />
-      </mesh>
-      
-      {/* Night lights layer */}
-      <mesh>
-        <sphereGeometry args={[1.001, 128, 128]} />
-        <meshBasicMaterial 
-          map={nightLightsTexture}
-          transparent 
-          opacity={0.6}
-          blending={THREE.AdditiveBlending}
         />
       </mesh>
       
