@@ -186,27 +186,49 @@ function CountryMarker({ country, onCountryClick }: { country: CountryData; onCo
 
 function Globe({ scores, onCountryClick, isNight = false, showAtmosphere = true }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const [textureError, setTextureError] = useState(false);
   
-  // Gerçek dünya haritası texture'ları
+  // Gerçek dünya haritası texture'ları - güvenli yükleme
   const worldTexture = useTexture('/earth-texture-real.svg', (texture) => {
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.flipY = false;
-    texture.anisotropy = 16;
+    if (texture) {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.flipY = false;
+      texture.anisotropy = 16;
+    }
+  }, (error) => {
+    console.warn('World texture yüklenemedi, fallback kullanılıyor:', error);
+    setTextureError(true);
+  });
+  
+  const fallbackTexture = useTexture('/earth-fallback.jpg', (texture) => {
+    if (texture) {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.flipY = false;
+    }
   });
   
   const nightLightsTexture = useTexture('/earth-night-lights.svg', (texture) => {
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.flipY = false;
-    texture.anisotropy = 16;
+    if (texture) {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.flipY = false;
+      texture.anisotropy = 16;
+    }
+  }, (error) => {
+    console.warn('Night lights texture yüklenemedi:', error);
   });
   
   const normalTexture = useTexture('/earth-normal.svg', (texture) => {
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.flipY = false;
-    texture.anisotropy = 16;
+    if (texture) {
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.flipY = false;
+      texture.anisotropy = 16;
+    }
+  }, (error) => {
+    console.warn('Normal texture yüklenemedi:', error);
   });
   
   const countries = useMemo(() => {
@@ -235,29 +257,43 @@ function Globe({ scores, onCountryClick, isNight = false, showAtmosphere = true 
       {/* Main Earth Sphere */}
       <mesh ref={meshRef}>
         <sphereGeometry args={[1, 256, 256]} />
-        <meshPhongMaterial 
-          map={worldTexture}
-          normalMap={normalTexture}
-          normalScale={[0.5, 0.5]}
-          shininess={100}
-          specular={0x222222}
-          transparent={false}
-          opacity={1.0}
-          wireframe={false}
-          side={THREE.DoubleSide}
-        />
+        {textureError ? (
+          <meshPhongMaterial 
+            map={fallbackTexture}
+            shininess={100}
+            specular={0x222222}
+            transparent={false}
+            opacity={1.0}
+            wireframe={false}
+            side={THREE.DoubleSide}
+          />
+        ) : (
+          <meshPhongMaterial 
+            map={worldTexture}
+            normalMap={normalTexture}
+            normalScale={[0.5, 0.5]}
+            shininess={100}
+            specular={0x222222}
+            transparent={false}
+            opacity={1.0}
+            wireframe={false}
+            side={THREE.DoubleSide}
+          />
+        )}
       </mesh>
       
       {/* Night Lights Layer */}
-      <mesh>
-        <sphereGeometry args={[1.001, 256, 256]} />
-        <meshBasicMaterial 
-          map={nightLightsTexture}
-          transparent={true}
-          opacity={isNight ? 0.8 : 0.0}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
+      {isNight && (
+        <mesh>
+          <sphereGeometry args={[1.001, 256, 256]} />
+          <meshBasicMaterial 
+            map={nightLightsTexture}
+            transparent={true}
+            opacity={0.8}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
       
       {/* Atmosphere Glow */}
       {showAtmosphere && (
