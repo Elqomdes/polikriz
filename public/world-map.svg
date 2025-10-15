@@ -1,0 +1,39 @@
+<svg width="2048" height="1024" viewBox="0 0 2048 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="world" patternUnits="userSpaceOnUse" width="2048" height="1024">
+      <rect width="2048" height="1024" fill="#1e40af"/>
+    </pattern>
+  </defs>
+  
+  <!-- Ocean -->
+  <rect width="2048" height="1024" fill="#1e40af"/>
+  
+  <!-- Continents (simplified) -->
+  <!-- North America -->
+  <path d="M200,300 L400,280 L450,320 L420,400 L380,450 L300,420 L200,380 Z" fill="#2d5a27"/>
+  
+  <!-- South America -->
+  <path d="M350,500 L400,480 L420,600 L400,700 L350,680 L320,600 Z" fill="#2d5a27"/>
+  
+  <!-- Europe -->
+  <path d="M800,200 L900,190 L950,220 L920,280 L850,300 L800,250 Z" fill="#2d5a27"/>
+  
+  <!-- Africa -->
+  <path d="M850,350 L950,340 L980,500 L960,650 L900,680 L850,500 Z" fill="#2d5a27"/>
+  
+  <!-- Asia -->
+  <path d="M950,150 L1400,140 L1450,200 L1400,400 L1200,450 L1000,400 L950,250 Z" fill="#2d5a27"/>
+  
+  <!-- Australia -->
+  <path d="M1400,600 L1600,590 L1650,650 L1600,700 L1450,720 L1400,650 Z" fill="#2d5a27"/>
+  
+  <!-- Grid lines -->
+  <g stroke="#3b82f6" stroke-width="1" opacity="0.3">
+    <line x1="0" y1="256" x2="2048" y2="256"/>
+    <line x1="0" y1="512" x2="2048" y2="512"/>
+    <line x1="0" y1="768" x2="2048" y2="768"/>
+    <line x1="512" y1="0" x2="512" y2="1024"/>
+    <line x1="1024" y1="0" x2="1024" y2="1024"/>
+    <line x1="1536" y1="0" x2="1536" y2="1024"/>
+  </g>
+</svg>

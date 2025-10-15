@@ -1,7 +1,7 @@
 "use client";
 import { useRef, useMemo, useState, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { OrbitControls, Html, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 
 type Props = {
@@ -147,8 +147,22 @@ function CountryMarker({ country, onCountryClick }: { country: CountryData; onCo
         onPointerOut={() => setHovered(false)}
         onClick={handleClick}
       >
-        <sphereGeometry args={[0.02, 8, 8]} />
-        <meshBasicMaterial color={country.color} />
+        <sphereGeometry args={[0.03, 12, 12]} />
+        <meshBasicMaterial 
+          color={country.color} 
+          transparent
+          opacity={0.8}
+        />
+      </mesh>
+      
+      {/* Glow effect */}
+      <mesh position={[0, 0, 0]}>
+        <sphereGeometry args={[0.05, 8, 8]} />
+        <meshBasicMaterial 
+          color={country.color} 
+          transparent
+          opacity={0.2}
+        />
       </mesh>
       
       {hovered && (
@@ -171,13 +185,16 @@ function CountryMarker({ country, onCountryClick }: { country: CountryData; onCo
 function Globe({ scores, onCountryClick }: Props) {
   const meshRef = useRef<THREE.Mesh>(null);
   
+  // Dünya haritası texture'ı
+  const worldTexture = useTexture('/world-map.svg');
+  
   const countries = useMemo(() => {
     return Object.entries(scores).map(([iso3, score]) => {
       const coords = COUNTRY_COORDINATES[iso3];
       if (!coords) return null;
       
       const [lat, lon] = coords;
-      const position = latLonToVector3(lat, lon, 1.01);
+      const position = latLonToVector3(lat, lon, 1.02);
       const color = getScoreColor(score);
       const turkishName = COUNTRY_NAMES_TR[iso3] || iso3;
       
@@ -197,9 +214,9 @@ function Globe({ scores, onCountryClick }: Props) {
       <mesh ref={meshRef}>
         <sphereGeometry args={[1, 64, 64]} />
         <meshPhongMaterial 
-          color="#4a90e2" 
+          map={worldTexture}
           transparent 
-          opacity={0.8}
+          opacity={0.9}
           wireframe={false}
         />
       </mesh>
@@ -208,15 +225,16 @@ function Globe({ scores, onCountryClick }: Props) {
         <CountryMarker key={country.iso3} country={country} onCountryClick={onCountryClick} />
       ))}
       
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[1, 1, 1]} intensity={0.8} />
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[1, 1, 1]} intensity={1.2} />
+      <pointLight position={[-1, -1, -1]} intensity={0.3} />
     </>
   );
 }
 
 export default function Globe3D({ scores, onCountryClick }: Props) {
   return (
-    <div className="w-full h-[600px] bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 rounded-lg overflow-hidden">
+    <div className="w-full h-[600px] relative bg-gradient-to-br from-slate-100 to-blue-100 dark:from-gray-800 dark:to-slate-800 rounded-lg overflow-hidden">
       <Canvas
         camera={{ position: [0, 0, 3], fov: 50 }}
         style={{ background: 'transparent' }}
@@ -232,14 +250,50 @@ export default function Globe3D({ scores, onCountryClick }: Props) {
         />
       </Canvas>
       
-      {/* Legend */}
+      {/* Top Controls */}
+      <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+        <div className="bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+          <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">Kontrol</div>
+          <div className="text-xs text-gray-600 dark:text-gray-300">
+            Fare ile döndür • Scroll ile zoom
+          </div>
+        </div>
+        
+        <div className="bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+          <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">Toplam Ülke</div>
+          <div className="text-xs text-gray-600 dark:text-gray-300">
+            {Object.keys(scores).length} ülke
+          </div>
+        </div>
+      </div>
+      
+      {/* Professional Legend */}
       <div className="absolute bottom-4 left-4 right-4">
-        <div className="flex items-center gap-3 text-xs bg-white/90 dark:bg-gray-900/90 px-4 py-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
-          <span className="text-gray-600 dark:text-gray-400">Düşük Risk</span>
-          <div className="h-3 flex-1 min-w-[200px] rounded shadow-sm" style={{ 
-            background: `linear-gradient(to right, #f7fbff, #deebf7, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #08519c, #08306b)` 
-          }} />
-          <span className="text-gray-600 dark:text-gray-400">Yüksek Risk</span>
+        <div className="bg-white/95 dark:bg-gray-900/95 px-6 py-4 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Polikriz Risk Seviyeleri</h3>
+            <div className="text-xs text-gray-500 dark:text-gray-400">0.0 - 1.0 arası</div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-xs text-gray-600 dark:text-gray-300">Düşük (0.0-0.3)</span>
+            </div>
+            
+            <div className="flex-1 h-2 rounded-full shadow-inner" style={{ 
+              background: `linear-gradient(to right, #f7fbff, #deebf7, #c6dbef, #9ecae1, #6baed6, #4292c6, #2171b5, #08519c, #08306b)` 
+            }} />
+            
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-600 dark:text-gray-300">Yüksek (0.7-1.0)</span>
+              <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            </div>
+          </div>
+          
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+            Ülkelere tıklayarak detaylı analiz sayfasına gidin
+          </div>
         </div>
       </div>
     </div>
