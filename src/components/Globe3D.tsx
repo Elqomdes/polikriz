@@ -189,47 +189,48 @@ function Globe({ scores, onCountryClick, isNight = false, showAtmosphere = true 
   const [textureError, setTextureError] = useState(false);
   
   // Gerçek dünya haritası texture'ları - güvenli yükleme
-  const worldTexture = useTexture('/earth-texture-real.svg', (texture) => {
-    if (texture) {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.flipY = false;
-      texture.anisotropy = 16;
+  const worldTextureRaw = useTexture('/earth-texture-real.svg');
+  const worldTexture = useMemo(() => {
+    if (worldTextureRaw) {
+      worldTextureRaw.wrapS = THREE.RepeatWrapping;
+      worldTextureRaw.wrapT = THREE.RepeatWrapping;
+      worldTextureRaw.flipY = false;
+      worldTextureRaw.anisotropy = 16;
     }
-  }, (error) => {
-    console.warn('World texture yüklenemedi, fallback kullanılıyor:', error);
-    setTextureError(true);
-  });
+    return worldTextureRaw;
+  }, [worldTextureRaw]);
   
-  const fallbackTexture = useTexture('/earth-fallback.jpg', (texture) => {
-    if (texture) {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.flipY = false;
+  const fallbackTextureRaw = useTexture('/earth-fallback.jpg');
+  const fallbackTexture = useMemo(() => {
+    if (fallbackTextureRaw) {
+      fallbackTextureRaw.wrapS = THREE.RepeatWrapping;
+      fallbackTextureRaw.wrapT = THREE.RepeatWrapping;
+      fallbackTextureRaw.flipY = false;
     }
-  });
+    return fallbackTextureRaw;
+  }, [fallbackTextureRaw]);
   
-  const nightLightsTexture = useTexture('/earth-night-lights.svg', (texture) => {
-    if (texture) {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.flipY = false;
-      texture.anisotropy = 16;
+  const nightLightsTextureRaw = useTexture('/earth-night-lights.svg');
+  const nightLightsTexture = useMemo(() => {
+    if (nightLightsTextureRaw) {
+      nightLightsTextureRaw.wrapS = THREE.RepeatWrapping;
+      nightLightsTextureRaw.wrapT = THREE.RepeatWrapping;
+      nightLightsTextureRaw.flipY = false;
+      nightLightsTextureRaw.anisotropy = 16;
     }
-  }, (error) => {
-    console.warn('Night lights texture yüklenemedi:', error);
-  });
+    return nightLightsTextureRaw;
+  }, [nightLightsTextureRaw]);
   
-  const normalTexture = useTexture('/earth-normal.svg', (texture) => {
-    if (texture) {
-      texture.wrapS = THREE.RepeatWrapping;
-      texture.wrapT = THREE.RepeatWrapping;
-      texture.flipY = false;
-      texture.anisotropy = 16;
+  const normalTextureRaw = useTexture('/earth-normal.svg');
+  const normalTexture = useMemo(() => {
+    if (normalTextureRaw) {
+      normalTextureRaw.wrapS = THREE.RepeatWrapping;
+      normalTextureRaw.wrapT = THREE.RepeatWrapping;
+      normalTextureRaw.flipY = false;
+      normalTextureRaw.anisotropy = 16;
     }
-  }, (error) => {
-    console.warn('Normal texture yüklenemedi:', error);
-  });
+    return normalTextureRaw;
+  }, [normalTextureRaw]);
   
   const countries = useMemo(() => {
     return Object.entries(scores).map(([iso3, score]) => {
