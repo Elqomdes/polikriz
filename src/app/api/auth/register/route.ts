@@ -61,8 +61,16 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
 
-  } catch (error) {
-    console.error("Registration error:", error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    // Handle duplicate key error (unique email)
+    if (typeof error === "object" && error !== null && (error as any).code === 11000) {
+      return NextResponse.json(
+        { error: "Bu email adresi zaten kayıtlı" },
+        { status: 400 }
+      );
+    }
+    console.error("Registration error:", message);
     return NextResponse.json(
       { error: "Sunucu hatası" },
       { status: 500 }

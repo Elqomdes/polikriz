@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 // Get all users (admin only)
 export async function GET(request: NextRequest) {
@@ -65,7 +66,7 @@ export async function PATCH(request: NextRequest) {
 
     const users = await getCollection("users");
     const result = await users.updateOne(
-      { _id: userId },
+      { _id: new ObjectId(userId) },
       { 
         $set: { 
           status,

@@ -17,9 +17,10 @@ export default async function AdminPage() {
   const allUsers = await users.find({}).toArray();
   
   // Remove password from response
-  const usersWithoutPassword: UserDocument[] = allUsers.map(user => {
-    const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword as UserDocument;
+  type AdminUser = Omit<UserDocument, "password"> & { _id: string };
+  const usersWithoutPassword: AdminUser[] = allUsers.map((user: any) => {
+    const { password, ...rest } = user;
+    return { ...rest, _id: user._id?.toString?.() ?? String(user._id) } as AdminUser;
   });
 
   return (
@@ -41,9 +42,14 @@ export default async function AdminPage() {
             ))}
           </div>
           <div className="mt-6">
-            <form action="/api/seed" method="post">
-              <button className="rounded-md border border-black/10 dark:border-white/10 px-3 py-2 text-sm">Başlangıç İçeriklerini Yükle</button>
-            </form>
+            <div className="flex items-center gap-3">
+              <form action="/api/seed" method="post">
+                <button className="rounded-md border border-black/10 dark:border-white/10 px-3 py-2 text-sm">Başlangıç İçeriklerini Yükle</button>
+              </form>
+              <form action="/api/admin/db-setup" method="post">
+                <button className="rounded-md border border-black/10 dark:border-white/10 px-3 py-2 text-sm">Veritabanı İndekslerini Kur</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>

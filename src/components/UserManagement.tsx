@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { UserDocument } from "@/types/auth";
 
+type AdminUser = Omit<UserDocument, "password"> & { _id: string };
+
 interface UserManagementProps {
-  initialUsers: UserDocument[];
+  initialUsers: AdminUser[];
 }
 
 export default function UserManagement({ initialUsers }: UserManagementProps) {
-  const [users, setUsers] = useState<UserDocument[]>(initialUsers);
+  const [users, setUsers] = useState<AdminUser[]>(initialUsers);
   const [isLoading, setIsLoading] = useState(false);
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
 
