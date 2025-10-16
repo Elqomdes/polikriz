@@ -1,6 +1,10 @@
+"use client";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 export default function CountriesPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ProtectedRoute>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-semibold tracking-tight mb-4">Ülkeler</h1>
       <div className="mb-4">
         <input aria-label="Ülke ara" placeholder="Ülke ara veya filtrele" className="w-full sm:w-96 rounded-md border border-black/10 dark:border-white/10 px-3 py-2 bg-white dark:bg-black" />
@@ -13,7 +17,8 @@ export default function CountriesPage() {
           </a>
         ))}
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
 

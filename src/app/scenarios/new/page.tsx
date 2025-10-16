@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import ParameterEditor from "@/components/ParameterEditor";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function ScenarioWizardPage() {
   const [countries, setCountries] = useState<string[]>([]);
@@ -28,7 +29,8 @@ export default function ScenarioWizardPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ProtectedRoute>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-semibold tracking-tight mb-6">Senaryo Sihirbazı</h1>
       <ol className="list-decimal list-inside text-sm text-black/60 dark:text-white/60 mb-6">
         <li>Ülke/ülke grubu seçimi</li>
@@ -87,7 +89,8 @@ export default function ScenarioWizardPage() {
           <button onClick={onRun} className="inline-flex items-center justify-center rounded-md bg-black text-white dark:bg-white dark:text-black px-4 py-2 text-sm font-medium hover:opacity-90">Çalıştır</button>
         </div>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
 

@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/i18n/I18nProvider";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { SessionProvider } from "next-auth/react";
+import UserMenu from "@/components/UserMenu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +32,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
+        <SessionProvider>
         <I18nProvider>
         <a href="#main" className="skip-to-content">İçeriğe atla</a>
         <div className="min-h-screen flex flex-col">
@@ -43,7 +46,10 @@ export default function RootLayout({
                 <Link href="/scenarios/new" className="hover:underline">Senaryo Sihirbazı</Link>
                 <Link href="/reports" className="hover:underline">Raporlar</Link>
               </nav>
-              <LanguageSwitcher />
+              <div className="flex items-center gap-4">
+                <LanguageSwitcher />
+                <UserMenu />
+              </div>
             </div>
           </header>
           <main id="main" className="flex-1">
@@ -60,6 +66,7 @@ export default function RootLayout({
           </footer>
         </div>
         </I18nProvider>
+        </SessionProvider>
       </body>
     </html>
   );

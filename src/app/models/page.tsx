@@ -1,3 +1,6 @@
+"use client";
+import ProtectedRoute from "@/components/ProtectedRoute";
+
 export default function ModelsPage() {
   const models = [
     { key: "pd", name: "Prisoner's Dilemma", desc: "Kısa vadede ihanet cazip; güven oluşursa toplam refah artar." },
@@ -8,7 +11,8 @@ export default function ModelsPage() {
     { key: "evo", name: "Evrimsel", desc: "Strateji payları zamanla evrilir." },
   ];
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ProtectedRoute>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-semibold tracking-tight mb-4">Model Galerisi</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {models.map((m) => (
@@ -18,7 +22,8 @@ export default function ModelsPage() {
           </div>
         ))}
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
 

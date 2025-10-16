@@ -1,9 +1,11 @@
 "use client";
 import JSZip from "jszip";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function ReportsPage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <ProtectedRoute>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-semibold tracking-tight mb-4">Raporlama Merkezi</h1>
       <p className="text-sm text-black/60 dark:text-white/60 mb-6">Figür/tabloları işaretle ve toplu indir (PDF/SVG/PNG/CSV).</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -36,7 +38,8 @@ export default function ReportsPage() {
           Seçili öğeleri indir
         </button>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }
 
