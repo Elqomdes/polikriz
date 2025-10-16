@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
+import type { WithId } from "mongodb";
 import { redirect } from "next/navigation";
 import UserManagement from "@/components/UserManagement";
 import { UserDocument } from "@/types/auth";
@@ -13,13 +14,13 @@ export default async function AdminPage() {
   }
 
   // Get all users for admin management
-  const users = await getCollection("users");
+  const users = await getCollection<UserDocument>("users");
   const allUsers = await users.find({}).toArray();
   
   // Remove password from response
   type AdminUser = Omit<UserDocument, "password"> & { _id: string };
-  const usersWithoutPassword: AdminUser[] = allUsers.map((user: any) => {
-    const { password, ...rest } = user;
+  const usersWithoutPassword: AdminUser[] = (allUsers as WithId<UserDocument>[]) .map((user) => {
+    const { password: _password, ...rest } = user;
     return { ...rest, _id: user._id?.toString?.() ?? String(user._id) } as AdminUser;
   });
 

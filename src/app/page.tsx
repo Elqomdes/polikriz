@@ -8,11 +8,8 @@ import { useSession } from "next-auth/react";
 export default function Home() {
   const { data: session, status } = useSession();
   
-  const handleCountryClick = (countryName: string, iso3?: string) => {
-    if (iso3) {
-      window.location.href = `/countries/${iso3}`;
-    }
-  };
+  // Reserved for future map click navigation
+  const handleCountryClick = () => {};
 
   // Show welcome page for non-authenticated users
   if (status === "loading") {

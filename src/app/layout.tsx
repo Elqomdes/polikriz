@@ -2,9 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { I18nProvider } from "@/i18n/I18nProvider";
+import Providers from "./Providers";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
-import { SessionProvider } from "next-auth/react";
 import UserMenu from "@/components/UserMenu";
 
 const geistSans = Geist({
@@ -32,8 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        <SessionProvider>
-        <I18nProvider>
+        <Providers>
         <a href="#main" className="skip-to-content">İçeriğe atla</a>
         <div className="min-h-screen flex flex-col">
           <header className="border-b border-black/10 dark:border-white/10 bg-white/70 dark:bg-black/20 backdrop-blur">
@@ -65,8 +63,7 @@ export default function RootLayout({
             </div>
           </footer>
         </div>
-        </I18nProvider>
-        </SessionProvider>
+        </Providers>
       </body>
     </html>
   );

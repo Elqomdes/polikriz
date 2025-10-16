@@ -16,7 +16,7 @@ export default function SignUpPage() {
     reason: ""
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -28,10 +28,10 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setErrorMessage("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Şifreler eşleşmiyor");
+      setErrorMessage("Şifreler eşleşmiyor");
       setIsLoading(false);
       return;
     }
@@ -58,10 +58,10 @@ export default function SignUpPage() {
         alert("Üyelik başvurunuz alındı. Onay bekleniyor.");
         router.push("/auth/signin");
       } else {
-        setError(data.error || "Bir hata oluştu");
+        setErrorMessage(data.error || "Bir hata oluştu");
       }
-    } catch (error) {
-      setError("Bir hata oluştu");
+    } catch {
+      setErrorMessage("Bir hata oluştu");
     } finally {
       setIsLoading(false);
     }
@@ -190,9 +190,9 @@ export default function SignUpPage() {
             </div>
           </div>
 
-          {error && (
+          {errorMessage && (
             <div className="text-red-600 text-sm text-center">
-              {error}
+              {errorMessage}
             </div>
           )}
 

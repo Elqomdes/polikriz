@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     // Handle duplicate key error (unique email)
-    if (typeof error === "object" && error !== null && (error as any).code === 11000) {
+    if (typeof error === "object" && error !== null && (error as { code?: number }).code === 11000) {
       return NextResponse.json(
         { error: "Bu email adresi zaten kayıtlı" },
         { status: 400 }

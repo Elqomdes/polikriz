@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { UserDocument } from "@/types/auth";
 
 type AdminUser = Omit<UserDocument, "password"> & { _id: string };
@@ -41,14 +41,14 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
       } else {
         alert("Kullanıcı durumu güncellenirken hata oluştu");
       }
-    } catch (error) {
+    } catch {
       alert("Bir hata oluştu");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: "pending" | "approved" | "rejected" | string) => {
     const baseClasses = "px-2 py-1 text-xs font-medium rounded-full";
     switch (status) {
       case "pending":
@@ -62,7 +62,7 @@ export default function UserManagement({ initialUsers }: UserManagementProps) {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status: "pending" | "approved" | "rejected" | string) => {
     switch (status) {
       case "pending":
         return "Beklemede";

@@ -5,7 +5,7 @@ import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 // Get all users (admin only)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     
     // Remove password from response
     const usersWithoutPassword = allUsers.map(user => {
-      const { password, ...userWithoutPassword } = user;
+      const { password: _password, ...userWithoutPassword } = user;
       return userWithoutPassword;
     });
 

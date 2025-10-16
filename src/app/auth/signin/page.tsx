@@ -12,7 +12,7 @@ export default function SignInPage() {
     password: ""
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -24,7 +24,7 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setErrorMessage("");
 
     try {
       const result = await signIn("credentials", {
@@ -34,20 +34,20 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        setError("Geçersiz email veya şifre");
+        setErrorMessage("Geçersiz email veya şifre");
       } else if (result?.ok) {
         // Check user status
         const session = await getSession();
         if (session?.user?.status === "pending") {
-          setError("Hesabınız henüz onaylanmamış. Lütfen bekleyin.");
+          setErrorMessage("Hesabınız henüz onaylanmamış. Lütfen bekleyin.");
         } else if (session?.user?.status === "rejected") {
-          setError("Hesabınız reddedilmiş. Lütfen yeni bir başvuru yapın.");
+          setErrorMessage("Hesabınız reddedilmiş. Lütfen yeni bir başvuru yapın.");
         } else {
           router.push("/");
         }
       }
-    } catch (error) {
-      setError("Bir hata oluştu");
+  } catch {
+      setErrorMessage("Bir hata oluştu");
     } finally {
       setIsLoading(false);
     }
@@ -99,9 +99,9 @@ export default function SignInPage() {
             </div>
           </div>
 
-          {error && (
+          {errorMessage && (
             <div className="text-red-600 text-sm text-center">
-              {error}
+              {errorMessage}
             </div>
           )}
 
