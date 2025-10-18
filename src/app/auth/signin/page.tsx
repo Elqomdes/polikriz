@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function SignInPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: ""
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -28,13 +28,13 @@ export default function SignInPage() {
 
     try {
       const result = await signIn("credentials", {
-        email: formData.email,
+        username: formData.username,
         password: formData.password,
         redirect: false,
       });
 
       if (result?.error) {
-        setErrorMessage("Geçersiz email veya şifre");
+        setErrorMessage("Geçersiz kullanıcı adı veya şifre");
       } else if (result?.ok) {
         // Check user status
         const session = await getSession();
@@ -67,18 +67,18 @@ export default function SignInPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Adresi
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                Kullanıcı Adı
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="username"
+                name="username"
+                type="text"
                 required
-                value={formData.email}
+                value={formData.username}
                 onChange={handleChange}
                 className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="ornek@email.com"
+                placeholder="kullanici_adi"
               />
             </div>
 

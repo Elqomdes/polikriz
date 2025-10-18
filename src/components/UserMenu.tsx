@@ -48,7 +48,7 @@ export default function UserMenu() {
             {session.user.name?.charAt(0).toUpperCase()}
           </span>
         </div>
-        <span>{session.user.name}</span>
+        <span>{session.user.username || session.user.name}</span>
         <svg
           className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
@@ -86,3 +86,4 @@ export default function UserMenu() {
     </div>
   );
 }
+

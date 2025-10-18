@@ -6,12 +6,12 @@ import { UserRegistration } from "@/types/auth";
 export async function POST(request: NextRequest) {
   try {
     const body: UserRegistration = await request.json();
-    const { name, email, password, organization, position, reason } = body;
+    const { name, username, email, password, organization, position, reason } = body;
 
     // Validation
-    if (!name || !email || !password) {
+    if (!name || !username || !email || !password) {
       return NextResponse.json(
-        { error: "Ad, email ve şifre gereklidir" },
+        { error: "Ad, kullanıcı adı, email ve şifre gereklidir" },
         { status: 400 }
       );
     }
@@ -25,11 +25,19 @@ export async function POST(request: NextRequest) {
 
     // Check if user already exists
     const users = await getCollection("users");
-    const existingUser = await users.findOne({ email });
+    const existingUserByEmail = await users.findOne({ email });
+    const existingUserByUsername = await users.findOne({ username });
     
-    if (existingUser) {
+    if (existingUserByEmail) {
       return NextResponse.json(
         { error: "Bu email adresi zaten kayıtlı" },
+        { status: 400 }
+      );
+    }
+
+    if (existingUserByUsername) {
+      return NextResponse.json(
+        { error: "Bu kullanıcı adı zaten alınmış" },
         { status: 400 }
       );
     }
@@ -40,6 +48,7 @@ export async function POST(request: NextRequest) {
     // Create user
     const userData = {
       name,
+      username,
       email,
       password: hashedPassword,
       organization: organization || "",
@@ -63,10 +72,10 @@ export async function POST(request: NextRequest) {
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    // Handle duplicate key error (unique email)
+    // Handle duplicate key error (unique email or username)
     if (typeof error === "object" && error !== null && (error as { code?: number }).code === 11000) {
       return NextResponse.json(
-        { error: "Bu email adresi zaten kayıtlı" },
+        { error: "Bu email adresi veya kullanıcı adı zaten kayıtlı" },
         { status: 400 }
       );
     }

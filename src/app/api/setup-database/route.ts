@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
 import { getCollection, getDb } from "@/lib/mongodb";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 export async function POST() {
 	try {
-		const session = await getServerSession(authOptions);
-		if (!session || session.user.role !== "admin") {
-			return NextResponse.json({ error: "Yetkisiz erişim" }, { status: 401 });
-		}
-
 		const db = await getDb("policrisis");
 		const results = [];
 
@@ -205,4 +198,3 @@ export async function POST() {
 		return NextResponse.json({ ok: false, error: message }, { status: 500 });
 	}
 }
-

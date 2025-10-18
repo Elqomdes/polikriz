@@ -8,18 +8,18 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" }
+        username: { label: "Kullanıcı Adı", type: "text" },
+        password: { label: "Şifre", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.username || !credentials?.password) {
           return null;
         }
 
         try {
           const users = await getCollection("users");
           const user = await users.findOne({ 
-            email: credentials.email,
+            username: credentials.username,
             status: "approved" // Sadece onaylanmış kullanıcılar giriş yapabilir
           });
 
@@ -36,6 +36,7 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user._id.toString(),
             email: user.email,
+            username: user.username,
             name: user.name,
             role: user.role,
             status: user.status
@@ -55,6 +56,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.status = user.status;
+        token.username = user.username;
       }
       return token;
     },
@@ -63,6 +65,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!;
         session.user.role = token.role as string;
         session.user.status = token.status as string;
+        session.user.username = token.username as string;
       }
       return session;
     },
