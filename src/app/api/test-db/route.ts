@@ -25,7 +25,7 @@ export async function GET() {
         }
         
         const insertResult = await testCollection.insertOne(testDoc)
-        const findResult = await testCollection.findOne({ _id: insertResult.insertedId })
+        await testCollection.findOne({ _id: insertResult.insertedId })
         await testCollection.deleteOne({ _id: insertResult.insertedId })
         
         results.mongodb = {

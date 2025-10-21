@@ -1,31 +1,33 @@
 import { NextResponse } from 'next/server'
-import { checkDatabaseStatus } from '@/lib/db-init'
+import { testPrismaConnection } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const status = await checkDatabaseStatus()
+    // Vercel için sadece Prisma kontrolü
+    const prismaConnected = await testPrismaConnection()
     
-    const httpStatus = status.overall === 'unhealthy' ? 503 : 200
+    const status = prismaConnected ? 'healthy' : 'unhealthy'
+    const httpStatus = status === 'unhealthy' ? 503 : 200
     
     return NextResponse.json({
-      status: status.overall,
+      status,
       timestamp: new Date().toISOString(),
-      databases: {
-        mongodb: {
-          connected: status.mongodb.connected,
-          error: status.mongodb.error
-        },
+      database: {
         prisma: {
-          connected: status.prisma.connected,
-          error: status.prisma.error
+          connected: prismaConnected
         }
       },
-      message: status.overall === 'healthy' 
+      message: status === 'healthy' 
         ? 'All systems operational' 
-        : status.overall === 'degraded'
-        ? 'Partial connectivity - some features may be limited'
         : 'Database connectivity issues detected'
-    }, { status: httpStatus })
+    }, { 
+      status: httpStatus,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
   } catch (error) {
     console.error('Health check error:', error)
     return NextResponse.json(
@@ -35,7 +37,14 @@ export async function GET() {
         message: 'Health check failed',
         error: error instanceof Error ? error.message : 'Unknown error'
       },
-      { status: 500 }
+      { 
+        status: 500,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      }
     )
   }
 }

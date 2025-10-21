@@ -64,12 +64,12 @@ export async function GET(request: NextRequest) {
         
         // Year range filter
         if (startYear || endYear) {
-          query.year = {}
+          query.year = {} as Record<string, number>
           if (startYear) {
-            query.year.$gte = parseInt(startYear)
+            (query.year as Record<string, number>).$gte = parseInt(startYear)
           }
           if (endYear) {
-            query.year.$lte = parseInt(endYear)
+            (query.year as Record<string, number>).$lte = parseInt(endYear)
           }
         }
         
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         
         // Try Prisma as fallback
         try {
-          const whereClause: any = {}
+          const whereClause: Record<string, unknown> = {}
           
           if (countryIds && countryIds.length > 0) {
             whereClause.countryId = { in: countryIds }
@@ -118,12 +118,12 @@ export async function GET(request: NextRequest) {
           }
           
           if (startYear || endYear) {
-            whereClause.year = {}
+            whereClause.year = {} as Record<string, number>
             if (startYear) {
-              whereClause.year.gte = parseInt(startYear)
+              (whereClause.year as Record<string, number>).gte = parseInt(startYear)
             }
             if (endYear) {
-              whereClause.year.lte = parseInt(endYear)
+              (whereClause.year as Record<string, number>).lte = parseInt(endYear)
             }
           }
           

@@ -1,13 +1,1 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/admin/page": "app/admin/page.js",
-  "/api/data/route": "app/api/data/route.js",
-  "/api/countries/route": "app/api/countries/route.js",
-  "/api/seed/route": "app/api/seed/route.js",
-  "/api/indicators/route": "app/api/indicators/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/api/test-db/route": "app/api/test-db/route.js",
-  "/test-db/page": "app/test-db/page.js",
-  "/simulation/page": "app/simulation/page.js",
-  "/page": "app/page.js"
-}
+{}

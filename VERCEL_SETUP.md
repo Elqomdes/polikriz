@@ -1,52 +1,65 @@
-# Vercel Deployment Setup
+# Vercel Deployment Setup - DÜZELTİLMİŞ
 
-## Environment Variables Ayarlama
+## ÖNEMLİ: Vercel için PostgreSQL Gerekli
 
-Vercel dashboard'da aşağıdaki environment variables'ları ekleyin:
+Bu proje artık **sadece PostgreSQL** kullanıyor. SQLite Vercel'de desteklenmiyor.
 
-### 1. Vercel Dashboard'a Gidin
-- https://vercel.com/dashboard
-- Projenizi seçin (`polikriz`)
-- **Settings** → **Environment Variables**
+## 1. PostgreSQL Database Kurulumu
 
-### 2. Gerekli Variables'ları Ekleyin
+### Seçenek A: Vercel Postgres (Önerilen)
+1. Vercel Dashboard → Projeniz → **Storage** → **Create Database** → **Postgres**
+2. Database oluşturun
+3. **Settings** → **Environment Variables** → `DATABASE_URL` otomatik eklenir
+
+### Seçenek B: External PostgreSQL
+- Supabase, Railway, Neon, PlanetScale gibi servisler
+- Connection string'i `DATABASE_URL` olarak ekleyin
+
+## 2. Environment Variables Ayarlama
+
+Vercel Dashboard → **Settings** → **Environment Variables**:
 
 ```
-MONGODB_URI = mongodb+srv://mey4249:emre4249@polikrizdatabase.uekezsx.mongodb.net/?retryWrites=true&w=majority&appName=polikrizdatabase
-NEXTAUTH_URL = https://your-domain.vercel.app
+DATABASE_URL = postgresql://username:password@host:5432/database
+NEXTAUTH_URL = https://your-app.vercel.app
 NEXTAUTH_SECRET = your-production-secret-key-here
 NODE_ENV = production
+PRISMA_GENERATE_DATAPROXY = false
 ```
 
-### 3. Deploy Ayarları
+## 3. Deploy Ayarları
 
 - **Framework Preset**: Next.js
 - **Root Directory**: ./
-- **Build Command**: `npm run build`
-- **Output Directory**: .next
+- **Build Command**: `npm run build` (otomatik)
+- **Output Directory**: .next (otomatik)
 
-### 4. MongoDB Atlas Ayarları
-
-MongoDB Atlas'da:
-1. **Network Access** → IP Whitelist'e `0.0.0.0/0` ekleyin (tüm IP'lere izin)
-2. **Database Access** → Kullanıcı oluşturun
-3. **Connection String**'i kopyalayın
-
-### 5. Test Etme
+## 4. Database Migration
 
 Deploy sonrası:
+1. Vercel CLI ile database'e bağlanın
+2. `npx prisma db push` komutunu çalıştırın
+3. `npx prisma db seed` ile veri ekleyin
+
+## 5. Test Etme
+
+Deploy sonrası:
+- `/api/health` endpoint'ini test edin
 - `/api/countries` endpoint'ini test edin
-- `/api/test-db` endpoint'ini test edin
 - Console'da hata mesajlarını kontrol edin
 
 ## Troubleshooting
 
-### MongoDB Connection Error
-- Environment variables'ların doğru ayarlandığını kontrol edin
-- MongoDB Atlas IP whitelist'ini kontrol edin
-- Connection string'in doğru olduğunu kontrol edin
-
 ### Build Error
 - `npm run build` komutunu local'de test edin
-- TypeScript hatalarını kontrol edin
-- Dependencies'lerin güncel olduğunu kontrol edin
+- PostgreSQL connection string'in doğru olduğunu kontrol edin
+- `prisma generate` komutunun çalıştığını kontrol edin
+
+### Database Connection Error
+- `DATABASE_URL` environment variable'ının doğru ayarlandığını kontrol edin
+- PostgreSQL database'in erişilebilir olduğunu kontrol edin
+- Firewall ayarlarını kontrol edin
+
+### Prisma Error
+- `npx prisma generate` komutunu çalıştırın
+- Database schema'nın güncel olduğunu kontrol edin

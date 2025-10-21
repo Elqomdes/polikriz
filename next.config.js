@@ -3,9 +3,8 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
-  i18n: {
-    locales: ['tr', 'en'],
-    defaultLocale: 'tr',
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
   },
   webpack: (config) => {
     config.resolve.fallback = {

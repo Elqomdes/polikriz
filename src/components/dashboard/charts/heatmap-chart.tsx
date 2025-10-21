@@ -104,3 +104,4 @@ export function HeatmapChart() {
     </div>
   )
 }
+

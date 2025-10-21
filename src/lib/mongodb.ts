@@ -2,11 +2,14 @@ import { MongoClient, Db } from 'mongodb'
 
 if (!process.env.MONGODB_URI) {
   console.warn('MONGODB_URI not found, using fallback mode')
-  // Fallback için mock data kullanılacak
 }
 
 const uri = process.env.MONGODB_URI
-const options = {}
+const options = {
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+}
 
 let client: MongoClient
 let clientPromise: Promise<MongoClient>
@@ -43,4 +46,16 @@ export async function getDatabase(): Promise<Db> {
     throw new Error('MongoDB not configured - using fallback mode')
   }
   return client.db('polikriz_platform')
+}
+
+// Test connection function
+export async function testConnection(): Promise<boolean> {
+  try {
+    const db = await getDatabase()
+    await db.admin().ping()
+    return true
+  } catch (error) {
+    console.error('MongoDB connection test failed:', error)
+    return false
+  }
 }

@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         
         // Try Prisma as fallback
         try {
-          const whereClause: any = {}
+          const whereClause: Record<string, unknown> = {}
           
           if (region) {
             whereClause.region = {
