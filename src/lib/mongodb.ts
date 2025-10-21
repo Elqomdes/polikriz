@@ -14,7 +14,7 @@ let clientPromise: Promise<MongoClient>
 // MongoDB URI yoksa fallback mode
 if (!uri) {
   // Fallback mode için mock client promise
-  clientPromise = Promise.resolve(null as any)
+  clientPromise = Promise.resolve(null as unknown as MongoClient)
 } else if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
   // is preserved across module reloads caused by HMR (Hot Module Replacement).
