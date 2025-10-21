@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Country {
@@ -17,7 +17,7 @@ model Country {
   nameEn      String?
   region      String?
   subregion   String?
-  population  BigInt?
+  population  String?
   area        Float?
   latitude    Float?
   longitude   Float?
@@ -25,7 +25,6 @@ model Country {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  indicators  Indicator[]
   simulations Simulation[]
   dataPoints  DataPoint[]
 
@@ -86,7 +85,7 @@ model DataPoint {
   year        Int
   quarter     Int?
   month       Int?
-  metadata    Json?
+  metadata    String?
   quality     String?
   isActive    Boolean  @default(true)
   countryId   String
@@ -106,10 +105,10 @@ model Simulation {
   id          String   @id @default(cuid())
   name        String
   description String?
-  type        String   // 'game_theory', 'time_series', 'panel', 'spatial'
-  parameters  Json
-  results     Json?
-  status      String   @default('draft') // 'draft', 'running', 'completed', 'failed'
+  type        String
+  parameters  String
+  results     String?
+  status      String   @default("draft")
   seed        Int?
   iterations  Int?
   createdAt   DateTime @default(now())
@@ -128,7 +127,7 @@ model SimulationIndicator {
   id            String   @id @default(cuid())
   weight        Float?
   normalization String?
-  parameters    Json?
+  parameters    String?
   simulationId  String
   indicatorId   String
   createdAt     DateTime @default(now())
@@ -146,7 +145,7 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  role      String   @default('user') // 'user', 'admin', 'moderator'
+  role      String   @default("user")
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -158,7 +157,7 @@ model DataVersion {
   id          String   @id @default(cuid())
   version     String   @unique
   description String?
-  changes     Json?
+  changes     String?
   isActive    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -168,10 +167,10 @@ model DataVersion {
 
 model AuditLog {
   id          String   @id @default(cuid())
-  action      String   // 'create', 'update', 'delete', 'export', 'simulation'
-  entity      String   // 'country', 'indicator', 'data_point', 'simulation'
+  action      String
+  entity      String
   entityId    String?
-  changes     Json?
+  changes     String?
   userId      String?
   ipAddress   String?
   userAgent   String?
@@ -179,4 +178,3 @@ model AuditLog {
 
   @@map("audit_logs")
 }
-

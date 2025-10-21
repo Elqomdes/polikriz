@@ -57,3 +57,4 @@ CountrySchema.index({ region: 1 })
 CountrySchema.index({ name: 'text', nameEn: 'text' })
 
 export const Country = model<ICountry>('Country', CountrySchema)
+

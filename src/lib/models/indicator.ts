@@ -101,3 +101,4 @@ IndicatorSchema.index({ isActive: 1 })
 IndicatorSchema.index({ name: 'text', nameEn: 'text' })
 
 export const Indicator = model<IIndicator>('Indicator', IndicatorSchema)
+

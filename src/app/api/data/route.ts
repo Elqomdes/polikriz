@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getDatabase } from '@/lib/mongodb'
+import { prisma } from '@/lib/prisma'
 
 // Mock data - gerçek uygulamada veritabanından gelecek
 const dataPoints = [
@@ -42,60 +44,186 @@ export async function GET(request: NextRequest) {
     const endYear = searchParams.get('endYear')
     const format = searchParams.get('format') || 'json'
 
-    let filteredData = dataPoints
+    try {
+      // Try MongoDB first
+      try {
+        const db = await getDatabase()
+        const dataPointsCollection = db.collection('data_points')
+        
+        const query: Record<string, unknown> = {}
+        
+        // Country filter
+        if (countryIds && countryIds.length > 0) {
+          query.countryId = { $in: countryIds }
+        }
+        
+        // Indicator filter
+        if (indicatorIds && indicatorIds.length > 0) {
+          query.indicatorId = { $in: indicatorIds }
+        }
+        
+        // Year range filter
+        if (startYear || endYear) {
+          query.year = {}
+          if (startYear) {
+            query.year.$gte = parseInt(startYear)
+          }
+          if (endYear) {
+            query.year.$lte = parseInt(endYear)
+          }
+        }
+        
+        const dataPoints = await dataPointsCollection.find(query).toArray()
+        
+        // Format response
+        if (format === 'csv') {
+          const csvHeaders = 'Country,Indicator,Year,Value,Quality\n'
+          const csvData = dataPoints.map(point => 
+            `${point.countryId},${point.indicatorId},${point.year},${point.value},${point.quality}`
+          ).join('\n')
+          
+          return new NextResponse(csvHeaders + csvData, {
+            headers: {
+              'Content-Type': 'text/csv',
+              'Content-Disposition': 'attachment; filename="data.csv"'
+            }
+          })
+        }
 
-    // Country filter
-    if (countryIds && countryIds.length > 0) {
-      filteredData = filteredData.filter(dataPoint => 
-        countryIds.includes(dataPoint.countryId)
-      )
-    }
+        return NextResponse.json({
+          success: true,
+          data: dataPoints,
+          total: dataPoints.length,
+          source: 'mongodb',
+          filters: {
+            countries: countryIds,
+            indicators: indicatorIds,
+            startYear: startYear ? parseInt(startYear) : null,
+            endYear: endYear ? parseInt(endYear) : null
+          }
+        })
+      } catch (mongoError) {
+        console.error('MongoDB error:', mongoError)
+        
+        // Try Prisma as fallback
+        try {
+          const whereClause: any = {}
+          
+          if (countryIds && countryIds.length > 0) {
+            whereClause.countryId = { in: countryIds }
+          }
+          
+          if (indicatorIds && indicatorIds.length > 0) {
+            whereClause.indicatorId = { in: indicatorIds }
+          }
+          
+          if (startYear || endYear) {
+            whereClause.year = {}
+            if (startYear) {
+              whereClause.year.gte = parseInt(startYear)
+            }
+            if (endYear) {
+              whereClause.year.lte = parseInt(endYear)
+            }
+          }
+          
+          const dataPoints = await prisma.dataPoint.findMany({
+            where: whereClause,
+            orderBy: [{ year: 'desc' }, { countryId: 'asc' }]
+          })
+          
+          // Format response
+          if (format === 'csv') {
+            const csvHeaders = 'Country,Indicator,Year,Value,Quality\n'
+            const csvData = dataPoints.map(point => 
+              `${point.countryId},${point.indicatorId},${point.year},${point.value},${point.quality}`
+            ).join('\n')
+            
+            return new NextResponse(csvHeaders + csvData, {
+              headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': 'attachment; filename="data.csv"'
+              }
+            })
+          }
 
-    // Indicator filter
-    if (indicatorIds && indicatorIds.length > 0) {
-      filteredData = filteredData.filter(dataPoint => 
-        indicatorIds.includes(dataPoint.indicatorId)
-      )
-    }
-
-    // Year range filter
-    if (startYear) {
-      filteredData = filteredData.filter(dataPoint => 
-        dataPoint.year >= parseInt(startYear)
-      )
-    }
-    if (endYear) {
-      filteredData = filteredData.filter(dataPoint => 
-        dataPoint.year <= parseInt(endYear)
-      )
-    }
-
-    // Format response
-    if (format === 'csv') {
-      const csvHeaders = 'Country,Indicator,Year,Value,Quality\n'
-      const csvData = filteredData.map(point => 
-        `${point.countryId},${point.indicatorId},${point.year},${point.value},${point.quality}`
-      ).join('\n')
+          return NextResponse.json({
+            success: true,
+            data: dataPoints,
+            total: dataPoints.length,
+            source: 'prisma',
+            filters: {
+              countries: countryIds,
+              indicators: indicatorIds,
+              startYear: startYear ? parseInt(startYear) : null,
+              endYear: endYear ? parseInt(endYear) : null
+            }
+          })
+        } catch (prismaError) {
+          console.error('Prisma error:', prismaError)
+          throw new Error('Both database connections failed')
+        }
+      }
+    } catch (dbError) {
+      console.error('Database error:', dbError)
       
-      return new NextResponse(csvHeaders + csvData, {
-        headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': 'attachment; filename="data.csv"'
+      // Fallback to mock data
+      let filteredData = dataPoints
+
+      // Country filter
+      if (countryIds && countryIds.length > 0) {
+        filteredData = filteredData.filter(dataPoint => 
+          countryIds.includes(dataPoint.countryId)
+        )
+      }
+
+      // Indicator filter
+      if (indicatorIds && indicatorIds.length > 0) {
+        filteredData = filteredData.filter(dataPoint => 
+          indicatorIds.includes(dataPoint.indicatorId)
+        )
+      }
+
+      // Year range filter
+      if (startYear) {
+        filteredData = filteredData.filter(dataPoint => 
+          dataPoint.year >= parseInt(startYear)
+        )
+      }
+      if (endYear) {
+        filteredData = filteredData.filter(dataPoint => 
+          dataPoint.year <= parseInt(endYear)
+        )
+      }
+
+      // Format response
+      if (format === 'csv') {
+        const csvHeaders = 'Country,Indicator,Year,Value,Quality\n'
+        const csvData = filteredData.map(point => 
+          `${point.countryId},${point.indicatorId},${point.year},${point.value},${point.quality}`
+        ).join('\n')
+        
+        return new NextResponse(csvHeaders + csvData, {
+          headers: {
+            'Content-Type': 'text/csv',
+            'Content-Disposition': 'attachment; filename="data.csv"'
+          }
+        })
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: filteredData,
+        total: filteredData.length,
+        source: 'mock',
+        filters: {
+          countries: countryIds,
+          indicators: indicatorIds,
+          startYear: startYear ? parseInt(startYear) : null,
+          endYear: endYear ? parseInt(endYear) : null
         }
       })
     }
-
-    return NextResponse.json({
-      success: true,
-      data: filteredData,
-      total: filteredData.length,
-      filters: {
-        countries: countryIds,
-        indicators: indicatorIds,
-        startYear: startYear ? parseInt(startYear) : null,
-        endYear: endYear ? parseInt(endYear) : null
-      }
-    })
   } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Veri getirilemedi' },
@@ -159,3 +287,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+

@@ -52,3 +52,4 @@ CategorySchema.index({ order: 1 })
 CategorySchema.index({ name: 'text', nameEn: 'text' })
 
 export const Category = model<ICategory>('Category', CategorySchema)
+

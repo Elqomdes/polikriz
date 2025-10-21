@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabase } from '@/lib/mongodb'
+import { prisma } from '@/lib/prisma'
 
 // Mock data - fallback için
 const mockCountries = [
@@ -72,33 +73,73 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     try {
-      // MongoDB'den veri çek
-      const db = await getDatabase()
-      const countriesCollection = db.collection('countries')
-      
-      const query: Record<string, unknown> = {}
-      
-      // Region filter
-      if (region) {
-        query.region = new RegExp(region, 'i')
+      // Try MongoDB first
+      try {
+        const db = await getDatabase()
+        const countriesCollection = db.collection('countries')
+        
+        const query: Record<string, unknown> = {}
+        
+        // Region filter
+        if (region) {
+          query.region = new RegExp(region, 'i')
+        }
+        
+        // Search filter
+        if (search) {
+          query.$or = [
+            { name: new RegExp(search, 'i') },
+            { nameEn: new RegExp(search, 'i') },
+            { code: new RegExp(search, 'i') }
+          ]
+        }
+        
+        const countries = await countriesCollection.find(query).toArray()
+        
+        return NextResponse.json({
+          success: true,
+          data: countries,
+          total: countries.length,
+          source: 'mongodb'
+        })
+      } catch (mongoError) {
+        console.error('MongoDB error:', mongoError)
+        
+        // Try Prisma as fallback
+        try {
+          const whereClause: any = {}
+          
+          if (region) {
+            whereClause.region = {
+              contains: region,
+              mode: 'insensitive'
+            }
+          }
+          
+          if (search) {
+            whereClause.OR = [
+              { name: { contains: search, mode: 'insensitive' } },
+              { nameEn: { contains: search, mode: 'insensitive' } },
+              { code: { contains: search, mode: 'insensitive' } }
+            ]
+          }
+          
+          const countries = await prisma.country.findMany({
+            where: whereClause,
+            orderBy: { name: 'asc' }
+          })
+          
+          return NextResponse.json({
+            success: true,
+            data: countries,
+            total: countries.length,
+            source: 'prisma'
+          })
+        } catch (prismaError) {
+          console.error('Prisma error:', prismaError)
+          throw new Error('Both database connections failed')
+        }
       }
-      
-      // Search filter
-      if (search) {
-        query.$or = [
-          { name: new RegExp(search, 'i') },
-          { nameEn: new RegExp(search, 'i') },
-          { code: new RegExp(search, 'i') }
-        ]
-      }
-      
-      const countries = await countriesCollection.find(query).toArray()
-      
-      return NextResponse.json({
-        success: true,
-        data: countries,
-        total: countries.length
-      })
     } catch (dbError) {
       console.error('Database error:', dbError)
       
@@ -150,45 +191,90 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // MongoDB'ye kaydet
-      const db = await getDatabase()
-      const countriesCollection = db.collection('countries')
-      
-      // Check if country already exists
-      const existingCountry = await countriesCollection.findOne({ code: body.code })
-      if (existingCountry) {
-        return NextResponse.json(
-          { success: false, error: 'Bu ülke kodu zaten mevcut' },
-          { status: 409 }
-        )
-      }
+      // Try MongoDB first
+      try {
+        const db = await getDatabase()
+        const countriesCollection = db.collection('countries')
+        
+        // Check if country already exists
+        const existingCountry = await countriesCollection.findOne({ code: body.code })
+        if (existingCountry) {
+          return NextResponse.json(
+            { success: false, error: 'Bu ülke kodu zaten mevcut' },
+            { status: 409 }
+          )
+        }
 
-      // Create new country
-      const newCountry = {
-        code: body.code,
-        name: body.name,
-        nameEn: body.nameEn || body.name,
-        region: body.region || '',
-        subregion: body.subregion || '',
-        population: body.population || 0,
-        area: body.area || 0,
-        latitude: body.latitude || 0,
-        longitude: body.longitude || 0,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        // Create new country
+        const newCountry = {
+          code: body.code,
+          name: body.name,
+          nameEn: body.nameEn || body.name,
+          region: body.region || '',
+          subregion: body.subregion || '',
+          population: body.population || 0,
+          area: body.area || 0,
+          latitude: body.latitude || 0,
+          longitude: body.longitude || 0,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
 
-      const result = await countriesCollection.insertOne(newCountry)
-      const insertedCountry = {
-        ...newCountry,
-        _id: result.insertedId.toString()
-      }
+        const result = await countriesCollection.insertOne(newCountry)
+        const insertedCountry = {
+          ...newCountry,
+          _id: result.insertedId.toString()
+        }
 
-      return NextResponse.json({
-        success: true,
-        data: insertedCountry,
-        message: 'Ülke başarıyla eklendi'
-      }, { status: 201 })
+        return NextResponse.json({
+          success: true,
+          data: insertedCountry,
+          message: 'Ülke başarıyla eklendi',
+          source: 'mongodb'
+        }, { status: 201 })
+      } catch (mongoError) {
+        console.error('MongoDB error:', mongoError)
+        
+        // Try Prisma as fallback
+        try {
+          // Check if country already exists
+          const existingCountry = await prisma.country.findUnique({
+            where: { code: body.code }
+          })
+          
+          if (existingCountry) {
+            return NextResponse.json(
+              { success: false, error: 'Bu ülke kodu zaten mevcut' },
+              { status: 409 }
+            )
+          }
+
+          // Create new country
+          const newCountry = await prisma.country.create({
+            data: {
+              code: body.code,
+              name: body.name,
+              nameEn: body.nameEn || body.name,
+              region: body.region || '',
+              subregion: body.subregion || '',
+              population: body.population ? body.population.toString() : null,
+              area: body.area || null,
+              latitude: body.latitude || null,
+              longitude: body.longitude || null
+            }
+          })
+
+          return NextResponse.json({
+            success: true,
+            data: newCountry,
+            message: 'Ülke başarıyla eklendi',
+            source: 'prisma'
+          }, { status: 201 })
+        } catch (prismaError) {
+          console.error('Prisma error:', prismaError)
+          throw new Error('Both database connections failed')
+        }
+      }
     } catch (dbError) {
       console.error('Database error:', dbError)
       return NextResponse.json(

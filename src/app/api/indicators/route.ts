@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getDatabase } from '@/lib/mongodb'
+import { prisma } from '@/lib/prisma'
 
 // Mock data - gerçek uygulamada veritabanından gelecek
 const indicators = [
@@ -137,39 +139,121 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const active = searchParams.get('active')
 
-    let filteredIndicators = indicators
+    try {
+      // Try MongoDB first
+      try {
+        const db = await getDatabase()
+        const indicatorsCollection = db.collection('indicators')
+        
+        const query: Record<string, unknown> = {}
+        
+        // Category filter
+        if (category) {
+          query.categoryId = category
+        }
+        
+        // Search filter
+        if (search) {
+          query.$or = [
+            { name: new RegExp(search, 'i') },
+            { nameEn: new RegExp(search, 'i') },
+            { code: new RegExp(search, 'i') },
+            { description: new RegExp(search, 'i') }
+          ]
+        }
+        
+        // Active filter
+        if (active !== null) {
+          query.isActive = active === 'true'
+        }
+        
+        const indicators = await indicatorsCollection.find(query).toArray()
+        
+        return NextResponse.json({
+          success: true,
+          data: indicators,
+          total: indicators.length,
+          source: 'mongodb'
+        })
+      } catch (mongoError) {
+        console.error('MongoDB error:', mongoError)
+        
+        // Try Prisma as fallback
+        try {
+          const whereClause: any = {}
+          
+          if (category) {
+            whereClause.categoryId = category
+          }
+          
+          if (search) {
+            whereClause.OR = [
+              { name: { contains: search, mode: 'insensitive' } },
+              { nameEn: { contains: search, mode: 'insensitive' } },
+              { code: { contains: search, mode: 'insensitive' } },
+              { description: { contains: search, mode: 'insensitive' } }
+            ]
+          }
+          
+          if (active !== null) {
+            whereClause.isActive = active === 'true'
+          }
+          
+          const indicators = await prisma.indicator.findMany({
+            where: whereClause,
+            orderBy: { order: 'asc' }
+          })
+          
+          return NextResponse.json({
+            success: true,
+            data: indicators,
+            total: indicators.length,
+            source: 'prisma'
+          })
+        } catch (prismaError) {
+          console.error('Prisma error:', prismaError)
+          throw new Error('Both database connections failed')
+        }
+      }
+    } catch (dbError) {
+      console.error('Database error:', dbError)
+      
+      // Fallback to mock data
+      let filteredIndicators = indicators
 
-    // Category filter
-    if (category) {
-      filteredIndicators = filteredIndicators.filter(indicator => 
-        indicator.categoryId === category
-      )
+      // Category filter
+      if (category) {
+        filteredIndicators = filteredIndicators.filter(indicator => 
+          indicator.categoryId === category
+        )
+      }
+
+      // Search filter
+      if (search) {
+        const searchLower = search.toLowerCase()
+        filteredIndicators = filteredIndicators.filter(indicator =>
+          indicator.name.toLowerCase().includes(searchLower) ||
+          indicator.nameEn.toLowerCase().includes(searchLower) ||
+          indicator.code.toLowerCase().includes(searchLower) ||
+          indicator.description.toLowerCase().includes(searchLower)
+        )
+      }
+
+      // Active filter
+      if (active !== null) {
+        const isActive = active === 'true'
+        filteredIndicators = filteredIndicators.filter(indicator => 
+          indicator.isActive === isActive
+        )
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: filteredIndicators,
+        total: filteredIndicators.length,
+        source: 'mock'
+      })
     }
-
-    // Search filter
-    if (search) {
-      const searchLower = search.toLowerCase()
-      filteredIndicators = filteredIndicators.filter(indicator =>
-        indicator.name.toLowerCase().includes(searchLower) ||
-        indicator.nameEn.toLowerCase().includes(searchLower) ||
-        indicator.code.toLowerCase().includes(searchLower) ||
-        indicator.description.toLowerCase().includes(searchLower)
-      )
-    }
-
-    // Active filter
-    if (active !== null) {
-      const isActive = active === 'true'
-      filteredIndicators = filteredIndicators.filter(indicator => 
-        indicator.isActive === isActive
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: filteredIndicators,
-      total: filteredIndicators.length
-    })
   } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Göstergeler getirilemedi' },
@@ -236,3 +320,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
