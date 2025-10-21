@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "simulation": "Simulation Studio",
+    "data": "Data Center",
+    "about": "About",
+    "language": "Language"
+  },
+  "hero": {
+    "title": "Polikriz Platform",
+    "subtitle": "Analyze Multi-Dimensional Crisis Indicators",
+    "description": "Examine, compare and run advanced simulations of countries' economic, energy, environmental, health and demographic indicators on a single platform.",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More"
+  },
+  "features": {
+    "title": "Powerful Analysis Features",
+    "subtitle": "Comprehensive data analysis and visualization tools",
+    "interactiveCharts": {
+      "title": "Interactive Charts",
+      "description": "Time series, bar, radar and heatmap views"
+    },
+    "dynamicFilters": {
+      "title": "Dynamic Filters",
+      "description": "Country, category, year range and indicator filters"
+    },
+    "compositeScores": {
+      "title": "Composite Scores",
+      "description": "Country rankings with weighting and normalization options"
+    },
+    "simulationStudio": {
+      "title": "Simulation Studio",
+      "description": "Game theory, time series, panel and spatial modules"
+    }
+  },
+  "dataVisualization": {
+    "title": "Data Visualization",
+    "subtitle": "Multi-dimensional data analysis and comparison",
+    "timeSeries": "Time Series",
+    "barCharts": "Bar Charts",
+    "radarCharts": "Radar Charts",
+    "heatmaps": "Heatmaps",
+    "maps": "Maps"
+  },
+  "simulationStudio": {
+    "title": "Simulation Studio",
+    "subtitle": "Advanced analysis and scenario simulations",
+    "gameTheory": "Game Theory",
+    "timeSeries": "Time Series Analysis",
+    "panelData": "Panel Data Analysis",
+    "spatial": "Spatial Analysis"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "export": "Export",
+    "import": "Import",
+    "filter": "Filter",
+    "reset": "Reset",
+    "apply": "Apply",
+    "close": "Close",
+    "open": "Open",
+    "search": "Search",
+    "select": "Select",
+    "all": "All",
+    "none": "None"
+  }
+}
+

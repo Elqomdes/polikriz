@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Country {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  nameEn      String?
+  region      String?
+  subregion   String?
+  population  BigInt?
+  area        Float?
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  indicators  Indicator[]
+  simulations Simulation[]
+  dataPoints  DataPoint[]
+
+  @@map("countries")
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  nameEn      String?
+  description String?
+  descriptionEn String?
+  color       String?
+  icon        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  indicators  Indicator[]
+
+  @@map("categories")
+}
+
+model Indicator {
+  id              String   @id @default(cuid())
+  code            String   @unique
+  name            String
+  nameEn          String?
+  description     String?
+  descriptionEn   String?
+  unit            String?
+  unitEn          String?
+  source          String?
+  sourceEn        String?
+  coverage        String?
+  coverageEn      String?
+  transformation  String?
+  dataQuality     String?
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+  categoryId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  category        Category   @relation(fields: [categoryId], references: [id])
+  dataPoints      DataPoint[]
+  simulations     SimulationIndicator[]
+
+  @@map("indicators")
+}
+
+model DataPoint {
+  id          String   @id @default(cuid())
+  value       Float
+  year        Int
+  quarter     Int?
+  month       Int?
+  metadata    Json?
+  quality     String?
+  isActive    Boolean  @default(true)
+  countryId   String
+  indicatorId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  country     Country   @relation(fields: [countryId], references: [id])
+  indicator   Indicator @relation(fields: [indicatorId], references: [id])
+
+  @@unique([countryId, indicatorId, year, quarter, month])
+  @@map("data_points")
+}
+
+model Simulation {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String   // 'game_theory', 'time_series', 'panel', 'spatial'
+  parameters  Json
+  results     Json?
+  status      String   @default('draft') // 'draft', 'running', 'completed', 'failed'
+  seed        Int?
+  iterations  Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  completedAt DateTime?
+
+  // Relations
+  countryId   String?
+  country     Country? @relation(fields: [countryId], references: [id])
+  indicators  SimulationIndicator[]
+
+  @@map("simulations")
+}
+
+model SimulationIndicator {
+  id            String   @id @default(cuid())
+  weight        Float?
+  normalization String?
+  parameters    Json?
+  simulationId  String
+  indicatorId   String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  simulation    Simulation @relation(fields: [simulationId], references: [id])
+  indicator     Indicator  @relation(fields: [indicatorId], references: [id])
+
+  @@unique([simulationId, indicatorId])
+  @@map("simulation_indicators")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default('user') // 'user', 'admin', 'moderator'
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model DataVersion {
+  id          String   @id @default(cuid())
+  version     String   @unique
+  description String?
+  changes     Json?
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("data_versions")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  action      String   // 'create', 'update', 'delete', 'export', 'simulation'
+  entity      String   // 'country', 'indicator', 'data_point', 'simulation'
+  entityId    String?
+  changes     Json?
+  userId      String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@map("audit_logs")
+}
+

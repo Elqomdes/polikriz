@@ -1,0 +1,73 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "dashboard": "Dashboard",
+    "simulation": "Simülasyon Stüdyosu",
+    "data": "Veri Merkezi",
+    "about": "Hakkında",
+    "language": "Dil"
+  },
+  "hero": {
+    "title": "Polikriz Platform",
+    "subtitle": "Çok Boyutlu Kriz Göstergelerini Analiz Edin",
+    "description": "Ülkelerin ekonomi, enerji, çevre, sağlık ve demografi göstergelerini tek bir platformda inceleyin, karşılaştırın ve ileri düzey simülasyonlar çalıştırın.",
+    "getStarted": "Başlayın",
+    "learnMore": "Daha Fazla Bilgi"
+  },
+  "features": {
+    "title": "Güçlü Analiz Özellikleri",
+    "subtitle": "Kapsamlı veri analizi ve görselleştirme araçları",
+    "interactiveCharts": {
+      "title": "Etkileşimli Grafikler",
+      "description": "Zaman serisi, bar, radar ve ısı haritası görünümleri"
+    },
+    "dynamicFilters": {
+      "title": "Dinamik Filtreler",
+      "description": "Ülke, kategori, yıl aralığı ve gösterge filtreleri"
+    },
+    "compositeScores": {
+      "title": "Bileşik Skorlar",
+      "description": "Ağırlık ve normalizasyon seçenekleriyle ülke sıralamaları"
+    },
+    "simulationStudio": {
+      "title": "Simülasyon Stüdyosu",
+      "description": "Oyun teorisi, zaman serisi, panel ve mekânsal modüller"
+    }
+  },
+  "dataVisualization": {
+    "title": "Veri Görselleştirme",
+    "subtitle": "Çok boyutlu veri analizi ve karşılaştırma",
+    "timeSeries": "Zaman Serisi",
+    "barCharts": "Bar Grafikler",
+    "radarCharts": "Radar Grafikler",
+    "heatmaps": "Isı Haritaları",
+    "maps": "Haritalar"
+  },
+  "simulationStudio": {
+    "title": "Simülasyon Stüdyosu",
+    "subtitle": "İleri düzey analiz ve senaryo simülasyonları",
+    "gameTheory": "Oyun Teorisi",
+    "timeSeries": "Zaman Serisi Analizi",
+    "panelData": "Panel Veri Analizi",
+    "spatial": "Mekânsal Analiz"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Hata oluştu",
+    "retry": "Tekrar Dene",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "export": "Dışa Aktar",
+    "import": "İçe Aktar",
+    "filter": "Filtrele",
+    "reset": "Sıfırla",
+    "apply": "Uygula",
+    "close": "Kapat",
+    "open": "Aç",
+    "search": "Ara",
+    "select": "Seç",
+    "all": "Tümü",
+    "none": "Hiçbiri"
+  }
+}
+
