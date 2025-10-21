@@ -13,7 +13,8 @@ let clientPromise: Promise<MongoClient>
 
 // MongoDB URI yoksa fallback mode
 if (!uri) {
-  clientPromise = Promise.reject(new Error('MongoDB URI not configured'))
+  // Fallback mode için mock client promise
+  clientPromise = Promise.resolve(null as any)
 } else if (process.env.NODE_ENV === 'development') {
   // In development mode, use a global variable so that the value
   // is preserved across module reloads caused by HMR (Hot Module Replacement).
@@ -38,5 +39,8 @@ export default clientPromise
 
 export async function getDatabase(): Promise<Db> {
   const client = await clientPromise
+  if (!client) {
+    throw new Error('MongoDB not configured - using fallback mode')
+  }
   return client.db('polikriz_platform')
 }
